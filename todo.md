@@ -18,7 +18,7 @@
 - [ ] Add server and UI tests covering key public content queries, filters, role protection, and administrative mutations.
 - [ ] Validate desktop and mobile layouts, visual hierarchy, keyboard accessibility, and micro-interactions using browser previews.
 - [x] Prepare deployment documentation for a Vercel frontend and Render backend, with required environment-variable guidance.
-- [ ] Push the validated codebase, tests, and documentation to the supplied GitHub repository.
+- [x] Push the validated codebase, tests, and documentation to the supplied GitHub repository.
 - [x] Add Visit Us, Contact, and Leadership to the primary and mobile navigation so every public page is directly reachable.
 - [x] Add clear Home-page prompts for giving and the public media gallery.
 - [ ] Replace provisional Contact, Give, and Leadership copy once the parish provides verified contact channels, bank details, and leadership profiles.

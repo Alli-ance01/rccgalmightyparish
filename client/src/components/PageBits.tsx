@@ -1,4 +1,5 @@
 import { ArrowUpRight, CalendarDays, MapPin, PlayCircle } from "lucide-react";
+import React from "react";
 import { Link } from "wouter";
 
 export function SectionHeading({ eyebrow, title, copy, action }: { eyebrow: string; title: string; copy?: string; action?: { label: string; href: string } }) {
@@ -14,7 +15,7 @@ export function EmptyCard({ title, copy, action }: { title: string; copy: string
 }
 
 export function QueryError({ label = "We could not load this content.", retry }: { label?: string; retry?: () => void }) {
-  return <div className="rounded-[1.25rem] border border-rose-100 bg-rose-50 p-6"><p className="font-extrabold text-rose-800">{label}</p><p className="mt-2 text-sm leading-6 text-rose-700">Please check your connection and try again. If the issue continues, contact the parish team.</p>{retry && <button onClick={retry} className="tap-button mt-4 rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-extrabold text-rose-700">Try again</button>}</div>;
+  return <div role="alert" className="rounded-[1.25rem] border border-rose-100 bg-rose-50 p-6"><p className="font-extrabold text-rose-800">{label}</p><p className="mt-2 text-sm leading-6 text-rose-700">Please check your connection and try again. If the issue continues, contact the parish team.</p>{retry && <button onClick={retry} className="tap-button mt-4 rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-extrabold text-rose-700">Try again</button>}</div>;
 }
 
 export function EventMeta({ date, location }: { date: Date; location: string }) {
