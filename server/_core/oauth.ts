@@ -1,6 +1,7 @@
 import { COOKIE_NAME, ONE_YEAR_MS, OAUTH_STATE_COOKIE, decodeOAuthState } from "@shared/const";
 import { parse as parseCookieHeader } from "cookie";
 import type { Express, Request, Response } from "express";
+import { randomUUID } from "node:crypto";
 import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
@@ -11,6 +12,13 @@ function getQueryParam(req: Request, key: string): string | undefined {
 }
 
 export function registerOAuthRoutes(app: Express) {
+  app.get("/api/oauth/state", (req: Request, res: Response) => {
+    const nonce = randomUUID();
+    const cookieOptions = getSessionCookieOptions(req);
+    res.cookie(OAUTH_STATE_COOKIE, nonce, { ...cookieOptions, maxAge: 10 * 60 * 1000 });
+    res.status(200).json({ nonce });
+  });
+
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");
     const state = getQueryParam(req, "state");
@@ -56,7 +64,9 @@ export function registerOAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      res.redirect(302, "/");
+      const webAppUrl = process.env.WEB_APP_URL?.trim();
+      const redirectTarget = webAppUrl ? new URL("/", webAppUrl).toString() : "/";
+      res.redirect(302, redirectTarget);
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
       res.status(500).json({ error: "OAuth callback failed" });

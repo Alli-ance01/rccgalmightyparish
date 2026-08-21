@@ -1,0 +1,12 @@
+import { ArrowRight } from "lucide-react";
+import { Link } from "wouter";
+import { PageHero, SectionHeading } from "@/components/PageBits";
+import PublicLayout from "@/components/PublicLayout";
+import { mainMinistries } from "@/data/site";
+import { trpc } from "@/lib/trpc";
+
+export default function Ministries() {
+  const { data: managedPages = [] } = trpc.content.ministries.list.useQuery({ audience: "main" });
+  const merged = mainMinistries.map(item => ({ ...item, managed: managedPages.find(page => page.slug === item.slug) }));
+  return <PublicLayout><PageHero eyebrow="Ministries" title="One family. Many places to grow." copy="Find a ministry where you can be known, grow deeper, serve with your gifts, and help others do the same." /><section className="container py-20 sm:py-28"><SectionHeading eyebrow="TAP ministries" title="Find your community." copy="Each ministry has a unique rhythm, leadership team, and space for meaningful connection." /><div className="mt-12 grid gap-4 md:grid-cols-2">{merged.map((ministry, index) => <Link href={`/ministries/${ministry.slug}`} key={ministry.slug} className="group rounded-[1.5rem] border border-slate-200 bg-white p-7 transition-all hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-900/5"><p className="eyebrow text-[#0b4ab8]">0{index + 1} · Main parish</p><h2 className="display mt-8 text-4xl leading-[0.96] text-[#10213e]">{ministry.managed?.title ?? ministry.name}</h2><p className="mt-4 text-sm leading-7 text-slate-600">{ministry.managed?.summary ?? ministry.line}</p><span className="mt-8 inline-flex items-center gap-1 text-xs font-extrabold text-[#0b4ab8]">Explore this ministry<ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></span></Link>)}</div></section><section className="junior-surface junior-grid py-16"><div className="container flex flex-col justify-between gap-6 sm:flex-row sm:items-end"><div><p className="eyebrow text-[#baff3c]">For the next generation</p><h2 className="display mt-4 max-w-xl text-5xl leading-[0.94]">TAP Junior Church is a world of its own.</h2></div><Link href="/junior-church" className="tap-button inline-flex w-fit items-center gap-2 rounded-full bg-[#baff3c] px-5 py-3 text-sm font-extrabold text-[#1e104a]">Meet Junior Church<ArrowRight className="h-4 w-4" /></Link></div></section></PublicLayout>;
+}

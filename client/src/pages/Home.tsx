@@ -1,33 +1,49 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { Streamdown } from 'streamdown';
+import { ArrowRight, CalendarDays, ChevronDown, MapPin, Play, Sparkles } from "lucide-react";
+import { Link } from "wouter";
+import { EventMeta, QueryError, SectionHeading } from "@/components/PageBits";
+import PublicLayout from "@/components/PublicLayout";
+import { mainMinistries, serviceSchedule, site } from "@/data/site";
+import { trpc } from "@/lib/trpc";
 
-/**
- * All content in this page are only for example, replace with your own feature implementation
- * When building pages, remember your instructions in Frontend Workflow, Frontend Best Practices, Design Guide and Common Pitfalls
- */
 export default function Home() {
-  // The useAuth hook provides authentication state.
-  // To implement login/logout, call logout(), or start login from an event
-  // handler: onClick={() => startLogin()} (imported from "@/const"). Never call
-  // startLogin() during render (no href={startLogin()}) — it mints a one-time
-  // nonce cookie and must run only at the moment of navigation.
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
+  const eventsQuery = trpc.content.events.list.useQuery();
+  const sermonsQuery = trpc.content.sermons.list.useQuery();
+  const postsQuery = trpc.content.posts.list.useQuery();
+  const events = eventsQuery.data ?? [];
+  const sermons = sermonsQuery.data ?? [];
+  const posts = postsQuery.data ?? [];
+  const nextEvent = events.find(event => new Date(event.startsAt) >= new Date()) ?? events[0];
 
-  // If theme is switchable in App.tsx, we can implement theme toggling like this:
-  // const { theme, toggleTheme } = useTheme();
+  return <PublicLayout>
+    <section className="mesh grid-noise overflow-hidden text-white">
+      <div className="container relative min-h-[41rem] py-12 sm:py-16 lg:min-h-[42rem]">
+        <div className="absolute right-[-12rem] top-[-7rem] h-[28rem] w-[28rem] rounded-full border border-white/15 bg-white/[0.04] sm:right-[-6rem]" />
+        <div className="absolute bottom-[-9rem] right-[10%] h-64 w-64 rounded-full border border-[#d7ff54]/30 bg-[#d7ff54]/10 blur-[1px]" />
+        <div className="relative flex max-w-3xl flex-col pt-11 sm:pt-20">
+          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[0.68rem] font-extrabold tracking-[0.12em] text-[#d7ff54]"><Sparkles className="h-3.5 w-3.5" />A PARISH FAMILY IN IBADAN</div>
+          <h1 className="display mt-7 text-6xl leading-[0.89] sm:text-7xl lg:text-[6.4rem]">You have a place here.</h1>
+          <p className="mt-7 max-w-xl text-base leading-7 text-blue-100 sm:text-lg">TAP Church is a warm, faith-filled community where you can worship, grow, serve, and build a life rooted in Christ.</p>
+          <div className="mt-8 flex flex-wrap gap-3"><Link href="/visit" className="tap-button inline-flex items-center gap-2 rounded-full bg-[#d7ff54] px-5 py-3 text-sm font-extrabold text-[#10213e]">Plan a Visit<ArrowRight className="h-4 w-4" /></Link><Link href="/sermons" className="tap-button inline-flex items-center gap-2 rounded-full border border-white/30 px-5 py-3 text-sm font-extrabold text-white hover:bg-white/10"><Play className="h-3.5 w-3.5 fill-current" />Watch Sermon</Link></div>
+        </div>
+        <div className="relative mt-16 grid max-w-5xl gap-px overflow-hidden rounded-[1.35rem] border border-white/15 bg-white/15 md:grid-cols-3">
+          <div className="bg-[#07307d]/90 p-5"><p className="eyebrow text-[#d7ff54]">This Sunday</p><p className="mt-3 font-semibold">Sunday Service</p><p className="mt-1 text-sm text-blue-100">Sunday morning · Worship, the Word, and family.</p></div>
+          <div className="bg-[#07307d]/90 p-5"><p className="eyebrow text-[#d7ff54]">Find us</p><p className="mt-3 font-semibold">{site.city}</p><p className="mt-1 text-sm text-blue-100">A place to arrive as you are.</p></div>
+          <Link href="#service-times" className="tap-button group bg-[#d7ff54] p-5 text-[#10213e]"><p className="eyebrow text-[#10213e]">Weekly rhythm</p><p className="mt-3 flex items-center justify-between font-extrabold">View service schedule <ChevronDown className="h-4 w-4 transition-transform group-hover:translate-y-1" /></p></Link>
+        </div>
+      </div>
+    </section>
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      <main>
-        {/* Example: lucide-react for icons */}
-        <Loader2 className="animate-spin" />
-        Example Page
-        {/* Example: Streamdown for markdown rendering */}
-        <Streamdown>Any **markdown** content</Streamdown>
-        <Button variant="default">Example Button</Button>
-      </main>
-    </div>
-  );
+    <section id="service-times" className="container py-20 sm:py-28">
+      <SectionHeading eyebrow="A rhythm for every week" title="Come as you are. Keep growing." copy="Our week makes room for worship, Scripture, prayer, friendship, and the whole family." action={{ label: "Plan a Visit", href: "/visit" }} />
+      <div className="mt-12 divide-y divide-slate-200 border-y border-slate-200">{serviceSchedule.map((service, index) => <div key={service.name} className="grid gap-3 py-5 sm:grid-cols-[auto_0.7fr_1.4fr] sm:items-center"><span className="text-xs font-extrabold text-[#0b4ab8]">0{index + 1}</span><p className="font-bold text-[#10213e]">{service.name}</p><div><p className="text-sm font-semibold text-slate-700">{service.time}</p><p className="mt-1 text-sm leading-6 text-slate-500">{service.detail}</p></div></div>)}</div>
+    </section>
+
+    <section className="border-y border-slate-200 bg-white py-20 sm:py-28"><div className="container grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center"><div className="relative overflow-hidden rounded-[2rem] bg-[#d8e7ff] p-8 sm:p-12"><div className="absolute -right-16 -top-16 h-56 w-56 rounded-full border-[28px] border-white/60" /><div className="relative max-w-sm"><p className="eyebrow text-[#0b4ab8]">First time at TAP?</p><h2 className="display mt-5 text-5xl leading-[0.94] text-[#10213e]">We’ll help you feel at home.</h2><p className="mt-5 text-sm leading-7 text-slate-600">Whether you are reconnecting with church, searching for a community, or coming with family, start with a simple visit.</p><Link href="/visit" className="tap-button mt-8 inline-flex items-center gap-2 rounded-full bg-[#0b4ab8] px-5 py-3 text-sm font-extrabold text-white">Plan a Visit<ArrowRight className="h-4 w-4" /></Link></div></div><div><p className="eyebrow text-[#0b4ab8]">Your next steps</p><div className="mt-6 grid gap-4">{[{ title: "Visit this Sunday", copy: "Know what to expect before you arrive.", href: "/visit" }, { title: "Find your ministry", copy: "Meet people who are in a similar season of life.", href: "/ministries" }, { title: "Watch a sermon", copy: "Listen to a message whenever you need it.", href: "/sermons" }].map(item => <Link href={item.href} key={item.title} className="group rounded-2xl border border-slate-200 p-5 transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-900/5"><p className="flex items-center justify-between font-bold text-[#10213e]">{item.title}<ArrowRight className="h-4 w-4 text-[#0b4ab8] transition-transform group-hover:translate-x-1" /></p><p className="mt-2 text-sm leading-6 text-slate-500">{item.copy}</p></Link>)}</div></div></div></section>
+
+    <section className="container py-20 sm:py-28"><SectionHeading eyebrow="A place to belong" title="Find your people." copy="TAP is one parish family with meaningful spaces for every generation." action={{ label: "All ministries", href: "/ministries" }} /><div className="mt-12 grid gap-4 md:grid-cols-2">{mainMinistries.map((ministry, index) => <Link href={`/ministries/${ministry.slug}`} key={ministry.slug} className="group rounded-[1.45rem] border border-slate-200 bg-white p-6 transition-all hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-900/5"><span className="text-xs font-extrabold text-[#0b4ab8]">0{index + 1}</span><h3 className="display mt-7 text-3xl leading-none text-[#10213e]">{ministry.name}</h3><p className="mt-4 max-w-md text-sm leading-6 text-slate-600">{ministry.line}</p><span className="mt-7 inline-flex items-center gap-1 text-xs font-extrabold text-[#0b4ab8]">Explore ministry<ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></span></Link>)}</div></section>
+
+    <section className="bg-[#eef5ff] py-20 sm:py-28"><div className="container"><SectionHeading eyebrow="Stay connected" title="What’s happening at TAP." action={{ label: "View all events", href: "/events" }} />{eventsQuery.isError ? <div className="mt-10"><QueryError retry={() => void eventsQuery.refetch()} /></div> : <div className="mt-12 grid gap-5 lg:grid-cols-[1.4fr_0.8fr]">{nextEvent ? <Link href={`/events/${nextEvent.slug}`} className="group rounded-[1.5rem] bg-[#0b4ab8] p-7 text-white transition-transform hover:-translate-y-1"><p className="eyebrow text-[#d7ff54]">Upcoming gathering</p><h3 className="display mt-8 text-5xl leading-[0.95]">{nextEvent.title}</h3><p className="mt-5 max-w-xl text-sm leading-7 text-blue-100">{nextEvent.excerpt}</p><div className="text-blue-100"><EventMeta date={new Date(nextEvent.startsAt)} location={nextEvent.location} /></div><span className="mt-8 inline-flex items-center gap-1 text-xs font-extrabold text-[#d7ff54]">See event details<ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></span></Link> : <div className="rounded-[1.5rem] bg-[#0b4ab8] p-7 text-white"><p className="eyebrow text-[#d7ff54]">Upcoming gathering</p><h3 className="display mt-8 text-5xl leading-[0.95]">There is always room for you.</h3><p className="mt-5 max-w-xl text-sm leading-7 text-blue-100">Our next parish events will be published here. Until then, join us for the weekly rhythm of worship, Scripture, and prayer.</p><Link href="/events" className="mt-8 inline-flex items-center gap-1 text-xs font-extrabold text-[#d7ff54]">Explore events<ArrowRight className="h-3.5 w-3.5" /></Link></div>}<Link href="/junior-church" className="junior-surface junior-grid group overflow-hidden rounded-[1.5rem] p-7 transition-transform hover:-translate-y-1"><p className="eyebrow text-[#baff3c]">TAP Junior Church</p><h3 className="display mt-8 text-4xl leading-[0.95]">Big faith for growing hearts.</h3><p className="mt-5 text-sm leading-7 text-violet-100">A colourful home within the TAP family for children and teens.</p><span className="mt-8 inline-flex items-center gap-1 text-xs font-extrabold text-[#baff3c]">Meet the junior family<ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></span></Link></div>}</div></section>
+
+    <section className="container py-20 sm:py-28"><SectionHeading eyebrow="Watch and read" title="Continue the conversation." action={{ label: "All news", href: "/news" }} />{sermonsQuery.isError || postsQuery.isError ? <div className="mt-10"><QueryError retry={() => { void sermonsQuery.refetch(); void postsQuery.refetch(); }} /></div> : <div className="mt-12 grid gap-6 md:grid-cols-2">{sermons[0] ? <Link href={`/sermons/${sermons[0].slug}`} className="group rounded-[1.5rem] border border-slate-200 bg-white p-7 transition-all hover:-translate-y-1 hover:shadow-lg"><p className="eyebrow text-[#0b4ab8]">Latest sermon · {sermons[0].series}</p><h3 className="display mt-7 text-4xl leading-[0.96] text-[#10213e]">{sermons[0].title}</h3><p className="mt-4 text-sm text-slate-500">{sermons[0].speaker}</p><span className="mt-8 inline-flex items-center gap-1 text-xs font-extrabold text-[#0b4ab8]">Watch Sermon<Play className="h-3.5 w-3.5 fill-current" /></span></Link> : <Link href="/sermons" className="group rounded-[1.5rem] border border-slate-200 bg-white p-7 transition-all hover:-translate-y-1 hover:shadow-lg"><p className="eyebrow text-[#0b4ab8]">Message archive</p><h3 className="display mt-7 text-4xl leading-[0.96] text-[#10213e]">Watch a sermon, wherever you are.</h3><p className="mt-4 text-sm leading-7 text-slate-500">Our sermon library will help you revisit a message or share one with a friend.</p><span className="mt-8 inline-flex items-center gap-1 text-xs font-extrabold text-[#0b4ab8]">Watch Sermon<Play className="h-3.5 w-3.5 fill-current" /></span></Link>}{posts[0] ? <Link href={`/news/${posts[0].slug}`} className="group rounded-[1.5rem] bg-[#10213e] p-7 text-white transition-all hover:-translate-y-1 hover:shadow-lg"><p className="eyebrow text-[#d7ff54]">{posts[0].category}</p><h3 className="display mt-7 text-4xl leading-[0.96]">{posts[0].title}</h3><p className="mt-4 text-sm leading-7 text-slate-300">{posts[0].excerpt}</p><span className="mt-8 inline-flex items-center gap-1 text-xs font-extrabold text-[#d7ff54]">Read article<ArrowRight className="h-3.5 w-3.5" /></span></Link> : <Link href="/news" className="group rounded-[1.5rem] bg-[#10213e] p-7 text-white transition-all hover:-translate-y-1 hover:shadow-lg"><p className="eyebrow text-[#d7ff54]">Stories and news</p><h3 className="display mt-7 text-4xl leading-[0.96]">A closer look at life in our parish.</h3><p className="mt-4 text-sm leading-7 text-slate-300">Stories, resources, and announcements from the TAP Church family will live here.</p><span className="mt-8 inline-flex items-center gap-1 text-xs font-extrabold text-[#d7ff54]">Read news<ArrowRight className="h-3.5 w-3.5" /></span></Link>}</div>}<div className="mt-6 grid gap-4 md:grid-cols-2"><Link href="/give" className="group rounded-[1.4rem] bg-[#d7ff54] p-6 text-[#10213e] transition-transform hover:-translate-y-1"><p className="eyebrow">Generosity</p><h3 className="display mt-5 text-3xl leading-[0.94]">Give with clarity and confidence.</h3><p className="mt-4 text-sm leading-6 text-[#213b2b]">See the parish giving guidance and confirm approved account details with the church office.</p><span className="mt-6 inline-flex items-center gap-1 text-xs font-extrabold">Give to TAP<ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></span></Link><Link href="/media" className="group rounded-[1.4rem] border border-slate-200 bg-white p-6 transition-transform hover:-translate-y-1 hover:shadow-lg"><p className="eyebrow text-[#0b4ab8]">Media gallery</p><h3 className="display mt-5 text-3xl leading-[0.94] text-[#10213e]">Revisit moments from our parish family.</h3><p className="mt-4 text-sm leading-6 text-slate-600">View published photographs, videos, and resources from worship and community life.</p><span className="mt-6 inline-flex items-center gap-1 text-xs font-extrabold text-[#0b4ab8]">Explore media<ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></span></Link></div></section>
+  </PublicLayout>;
 }

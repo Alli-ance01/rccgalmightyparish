@@ -21,15 +21,20 @@ import {
 } from "@/components/ui/sidebar";
 import { startLogin } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
+import { CalendarDays, Images, LayoutDashboard, LogOut, Megaphone, Newspaper, PanelLeft, Users, Video } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Page 1", path: "/" },
-  { icon: Users, label: "Page 2", path: "/some-path" },
+  { icon: LayoutDashboard, label: "Overview", path: "/admin" },
+  { icon: CalendarDays, label: "Events", path: "/admin?tab=events" },
+  { icon: Video, label: "Sermons", path: "/admin?tab=sermons" },
+  { icon: Newspaper, label: "News", path: "/admin?tab=news" },
+  { icon: Users, label: "Ministries", path: "/admin?tab=ministries" },
+  { icon: Megaphone, label: "Announcements", path: "/admin?tab=announcements" },
+  { icon: Images, label: "Media", path: "/admin?tab=media" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -169,7 +174,7 @@ function DashboardLayoutContent({
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-semibold tracking-tight truncate">
-                    Navigation
+                    TAP Staff
                   </span>
                 </div>
               ) : null}

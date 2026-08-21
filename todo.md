@@ -1,0 +1,31 @@
+# Project TODO
+
+- [x] Establish the TAP content model, navigation taxonomy, authentication roles, and S3 media strategy.
+- [x] Create a refined blue-and-white design system with editorial typography, responsive tokens, accessibility, and reduced-motion support.
+- [x] Build the public site shell with a sticky TAP navigation bar, the exact CTAs “Plan a Visit” and “Watch Sermon,” footer, and mobile navigation drawer.
+- [x] Build the Home page with the complete service schedule, Ibadan location context, visitor journeys, ministries, sermon and event previews, giving prompt, media preview, and news preview.
+- [ ] Build the About, Visit Us, Contact, Give, and Leadership pages with trustworthy content structures and clear next steps.
+- [x] Build public Sermons listing and detail views with YouTube/Vimeo embeds, speaker and series metadata, series/speaker/date filters, search, and sermon-note downloads.
+- [x] Build public Events listing and detail views for upcoming and past church events.
+- [x] Build dedicated ministry pages for Almighty Elders, Almighty Excellent Men, Almighty Good Women, and Almighty YAYA (Youth & Young Adults).
+- [x] Build the Junior Church sub-site with a distinct Gen Z visual system and dedicated areas for Super Teens, Lower Teens, Preteens/9–12, 6–6, and 3–5.
+- [x] Build public Media/Gallery and Blog/News listing and detail pages, including category filters for blog posts.
+- [x] Implement database schema, query helpers, and typed server procedures for sermons, events, ministries, Junior Church content, posts, announcements, and media metadata.
+- [x] Implement S3-backed media upload and asset metadata handling without storing files on local disk or in database BLOB fields.
+- [x] Implement role-based authentication and permissions for member, worker, ministry leader, editor, and admin access.
+- [x] Implement an admin dashboard for staff to create, edit, and delete sermons, events, posts, announcements, gallery/media content, and ministry pages.
+- [x] Add robust loading, empty, error, and unauthorized states across public and admin experiences.
+- [ ] Add server and UI tests covering key public content queries, filters, role protection, and administrative mutations.
+- [ ] Validate desktop and mobile layouts, visual hierarchy, keyboard accessibility, and micro-interactions using browser previews.
+- [x] Prepare deployment documentation for a Vercel frontend and Render backend, with required environment-variable guidance.
+- [ ] Push the validated codebase, tests, and documentation to the supplied GitHub repository.
+- [x] Add Visit Us, Contact, and Leadership to the primary and mobile navigation so every public page is directly reachable.
+- [x] Add clear Home-page prompts for giving and the public media gallery.
+- [ ] Replace provisional Contact, Give, and Leadership copy once the parish provides verified contact channels, bank details, and leadership profiles.
+- [x] Add a public media-detail route for individual gallery items and documents.
+- [x] Add in-page data-load failure states and administrative action failure recovery across public and staff content pages.
+- [ ] Expand automated coverage for representative staff mutations and accessible public-page contracts.
+- [ ] Verify keyboard focus visibility and keyboard reachability on public and staff navigation controls.
+- [x] Harden the split-origin OAuth initiation flow for Vercel and Render and revalidate the deployment guide.
+- [x] Add retryable in-page error states to remaining data-driven public detail pages and staff views.
+- [x] Add form-level mutation failure summaries with draft preservation and retry guidance across staff editors and delete actions.

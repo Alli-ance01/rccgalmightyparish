@@ -1,0 +1,6 @@
+import { PageHero } from "@/components/PageBits";
+import PublicLayout from "@/components/PublicLayout";
+
+export default function Leadership() {
+  return <PublicLayout><PageHero eyebrow="Leadership" title="Shepherding the parish with faith and care." copy="TAP Church is served by committed ministry leaders, workers, and pastors who make space for people to grow in Christ." /><section className="container py-20 sm:py-28"><div className="grid gap-5 md:grid-cols-2"><article className="rounded-[1.5rem] border border-slate-200 bg-white p-8"><p className="eyebrow text-[#0b4ab8]">Parish leadership</p><h2 className="display mt-6 text-4xl leading-[0.96] text-[#10213e]">Leadership profiles are being prepared.</h2><p className="mt-5 max-w-lg text-sm leading-7 text-slate-600">Verified names, roles, and biographies will be published by the parish office to accurately represent the people entrusted with this ministry.</p></article><article className="rounded-[1.5rem] bg-[#10213e] p-8 text-white"><p className="eyebrow text-[#d7ff54]">Serving teams</p><h2 className="display mt-6 text-4xl leading-[0.96]">There is a place to serve.</h2><p className="mt-5 max-w-lg text-sm leading-7 text-slate-300">From hospitality and media to children, youth, worship, and care, TAP is built by people who faithfully serve one another.</p></article></div></section></PublicLayout>;
+}
