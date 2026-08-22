@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { juniorGroups, mainMinistries, serviceSchedule } from "./site";
+import { giving, juniorGroups, mainMinistries, serviceSchedule, site } from "./site";
 
 describe("TAP public information", () => {
   it("keeps the required ministry names intact", () => {
@@ -27,5 +27,20 @@ describe("TAP public information", () => {
       "Faith Clinic",
       "Holy Ghost Service Vigil",
     ]);
+  });
+
+  it("publishes the confirmed TAP contact, OPay, and Sunday information", () => {
+    expect(site).toMatchObject({
+      email: "ogundereoluwatimileyin@gmail.com",
+      phone: "07046611108",
+    });
+    expect(site.address).toContain("Beside NNPC Filling Station");
+    expect(giving).toMatchObject({
+      provider: "OPay",
+      accountName: "Oluwatimileyin Emmanuel Ogundere",
+      accountNumber: "7046611108",
+    });
+    expect(serviceSchedule.find(service => service.name === "Sunday Service")?.time).toContain("8:00 AM");
+    expect(serviceSchedule.find(service => service.name === "Sunday Service")?.time).toContain("9:30 AM");
   });
 });

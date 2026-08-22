@@ -29,3 +29,6 @@
 - [x] Harden the split-origin OAuth initiation flow for Vercel and Render and revalidate the deployment guide.
 - [x] Add retryable in-page error states to remaining data-driven public detail pages and staff views.
 - [x] Add form-level mutation failure summaries with draft preservation and retry guidance across staff editors and delete actions.
+- [x] Publish the supplied official parish phone, email, full church address, OPay giving details, and Sunday service times while retaining clearly labelled provisional content where information is unavailable.
+- [x] Add route-change scroll restoration so internal navigation begins at the top of the destination page.
+- [x] Add regression tests for the route-scroll behavior and the updated public contact/giving/service information.

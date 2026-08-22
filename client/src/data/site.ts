@@ -2,14 +2,21 @@ export const site = {
   name: "RCCG The Almighty Parish",
   shortName: "TAP",
   city: "Ibadan, Nigeria",
-  address: "Ibadan, Oyo State, Nigeria",
-  email: "hello@tapchurch.org",
-  phone: "+234 (0) 000 000 0000",
+  address: "RCCG Almighty Parish, Beside NNPC Filling Station, Ebenezery, off IyanaChurch/Alakia Axis, Ibadan, Oyo State, Nigeria",
+  email: "ogundereoluwatimileyin@gmail.com",
+  phone: "07046611108",
+};
+
+export const giving = {
+  provider: "OPay",
+  accountName: "Oluwatimileyin Emmanuel Ogundere",
+  accountNumber: "7046611108",
+  instructions: "No specific transfer reference has been provided. Please contact the parish before giving if you need help confirming the account or transfer instructions.",
 };
 
 export const serviceSchedule = [
-  { name: "Sunday Service", time: "Sunday morning", detail: "A gathering for worship, the Word, and family." },
-  { name: "House Fellowship", time: "Sunday evenings", detail: "Faith and friendship in smaller communities." },
+  { name: "Sunday Service", time: "Sunday School: 8:00 AM–9:30 AM · Sunday Service: 9:30 AM–11:30 AM", detail: "A gathering for worship, the Word, and family." },
+  { name: "House Fellowship", time: "Sunday evenings", detail: "Faith and friendship in smaller communities. Fellowship locations are communicated by the parish team." },
   { name: "Digging Deep", time: "Tuesday evenings", detail: "A focused, practical study of Scripture." },
   { name: "Youth Prayer Meeting", time: "Wednesday evenings", detail: "A prayer space for the next generation." },
   { name: "Faith Clinic", time: "Thursday evenings", detail: "Prayer, encouragement, and faith for real life." },

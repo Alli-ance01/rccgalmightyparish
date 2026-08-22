@@ -21,7 +21,15 @@ import PostDetail from "./pages/PostDetail";
 import SermonDetail from "./pages/SermonDetail";
 import Sermons from "./pages/Sermons";
 import Visit from "./pages/Visit";
-import { Route, Switch } from "wouter";
+import { useEffect } from "react";
+import { resetRouteScroll } from "./lib/scroll";
+import { Route, Switch, useLocation } from "wouter";
+
+function RouteScrollReset() {
+  const [location] = useLocation();
+  useEffect(() => { resetRouteScroll(); }, [location]);
+  return null;
+}
 
 function Router() {
   return <Switch>
@@ -48,5 +56,5 @@ function Router() {
 }
 
 export default function App() {
-  return <ErrorBoundary><ThemeProvider defaultTheme="light"><TooltipProvider><Toaster /><Router /></TooltipProvider></ThemeProvider></ErrorBoundary>;
+  return <ErrorBoundary><ThemeProvider defaultTheme="light"><TooltipProvider><Toaster /><RouteScrollReset /><Router /></TooltipProvider></ThemeProvider></ErrorBoundary>;
 }
