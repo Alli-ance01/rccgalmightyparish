@@ -1,6 +1,6 @@
 # TAP Church — RCCG The Almighty Parish
 
-This repository contains the public website and content-management platform for **RCCG The Almighty Parish (TAP)** in Ibadan, Nigeria. It combines a React/Vite public experience, an Express/tRPC API, a relational content database, and S3-backed media storage.
+This repository contains the public website and content-management platform for **RCCG The Almighty Parish (TAP)** in Ibadan, Nigeria. It combines a React/Vite public experience, an Express/tRPC API, a MongoDB content database, and S3-backed media storage.
 
 ## Local development
 
@@ -20,7 +20,7 @@ The repository supports a split deployment. `vercel.json` configures Vercel to b
 | Render | `API_ONLY=true` | Runs the Express/tRPC API without serving the compiled frontend. |
 | Render | `CORS_ORIGIN=https://your-vercel-domain` | Allows authenticated browser requests from the Vercel frontend. |
 | Render | `WEB_APP_URL=https://your-vercel-domain` | Sends a successfully authenticated user back to the public frontend. |
-| Render | `DATABASE_URL`, `JWT_SECRET`, `OAUTH_SERVER_URL`, `VITE_APP_ID`, `OWNER_OPEN_ID` | Enables the database and OAuth session flow. |
+| Render | `MONGODB_URI`, `JWT_SECRET`, `OAUTH_SERVER_URL`, `VITE_APP_ID`, `OWNER_OPEN_ID` | Enables the MongoDB database and OAuth session flow. |
 
 For production, use custom subdomains on the same parent domain, such as `www.yourchurchdomain.com` for Vercel and `api.yourchurchdomain.com` for Render. This offers a more reliable authenticated browser experience than unrelated temporary domains. The OAuth provider must also allow the Render callback URL: `https://api.yourchurchdomain.com/api/oauth/callback`.
 

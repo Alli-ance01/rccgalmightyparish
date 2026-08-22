@@ -22,6 +22,7 @@ const editorProcedure = protectedProcedure.use(({ ctx, next }) => {
 
 const optionalString = z.string().trim().max(1024).optional().nullable();
 const slug = z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase hyphenated words for a URL slug.");
+const mongoId = z.string().regex(/^[a-f\d]{24}$/i, "Invalid content identifier.");
 
 const sermonInput = z.object({
   title: z.string().trim().min(3).max(255),
@@ -100,52 +101,56 @@ export const contentRouter = router({
       .input(z.object({ search: z.string().optional(), series: z.string().optional(), speaker: z.string().optional(), from: z.date().optional(), to: z.date().optional() }).optional())
       .query(({ input }) => db.listSermons(input)),
     bySlug: publicProcedure.input(z.object({ slug })).query(({ input }) => db.getSermonBySlug(input.slug)),
-    save: editorProcedure.input(z.object({ id: z.number().optional(), values: sermonInput })).mutation(({ input }) =>
+    save: editorProcedure.input(z.object({ id: mongoId.optional(), values: sermonInput })).mutation(({ input }) =>
       db.saveSermon({
         ...input.values,
         videoId: blankToNull(input.values.videoId),
         sermonNotesTitle: blankToNull(input.values.sermonNotesTitle),
         sermonNotesUrl: blankToNull(input.values.sermonNotesUrl),
         coverImageUrl: blankToNull(input.values.coverImageUrl),
+        publishedAt: input.values.publishedAt ?? null,
       }, input.id),
     ),
-    delete: editorProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.deleteSermon(input.id)),
+    delete: editorProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteSermon(input.id)),
   }),
   events: router({
     list: publicProcedure.query(() => db.listEvents()),
     bySlug: publicProcedure.input(z.object({ slug })).query(({ input }) => db.getEventBySlug(input.slug)),
-    save: editorProcedure.input(z.object({ id: z.number().optional(), values: eventInput })).mutation(({ input }) =>
+    save: editorProcedure.input(z.object({ id: mongoId.optional(), values: eventInput })).mutation(({ input }) =>
       db.saveEvent({
         ...input.values,
         registrationUrl: blankToNull(input.values.registrationUrl),
         coverImageUrl: blankToNull(input.values.coverImageUrl),
+        endsAt: input.values.endsAt ?? null,
       }, input.id),
     ),
-    delete: editorProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.deleteEvent(input.id)),
+    delete: editorProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteEvent(input.id)),
   }),
   posts: router({
     list: publicProcedure.input(z.object({ category: z.string().optional() }).optional()).query(({ input }) => db.listPosts(input?.category)),
     bySlug: publicProcedure.input(z.object({ slug })).query(({ input }) => db.getPostBySlug(input.slug)),
-    save: editorProcedure.input(z.object({ id: z.number().optional(), values: postInput })).mutation(({ input }) =>
-      db.savePost({ ...input.values, coverImageUrl: blankToNull(input.values.coverImageUrl) }, input.id),
+    save: editorProcedure.input(z.object({ id: mongoId.optional(), values: postInput })).mutation(({ input }) =>
+      db.savePost({ ...input.values, coverImageUrl: blankToNull(input.values.coverImageUrl), publishedAt: input.values.publishedAt ?? null }, input.id),
     ),
-    delete: editorProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.deletePost(input.id)),
+    delete: editorProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deletePost(input.id)),
   }),
   announcements: router({
     list: publicProcedure.query(() => db.listAnnouncements()),
-    save: editorProcedure.input(z.object({ id: z.number().optional(), values: announcementInput })).mutation(({ input }) =>
+    save: editorProcedure.input(z.object({ id: mongoId.optional(), values: announcementInput })).mutation(({ input }) =>
       db.saveAnnouncement({
         ...input.values,
         actionLabel: blankToNull(input.values.actionLabel),
         actionUrl: blankToNull(input.values.actionUrl),
+        startsAt: input.values.startsAt ?? null,
+        endsAt: input.values.endsAt ?? null,
       }, input.id),
     ),
-    delete: editorProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.deleteAnnouncement(input.id)),
+    delete: editorProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteAnnouncement(input.id)),
   }),
   ministries: router({
     list: publicProcedure.input(z.object({ audience: z.enum(["main", "junior"]).optional() }).optional()).query(({ input }) => db.listMinistryPages(input?.audience)),
     bySlug: publicProcedure.input(z.object({ slug })).query(({ input }) => db.getMinistryBySlug(input.slug)),
-    save: staffProcedure.input(z.object({ id: z.number().optional(), values: ministryInput })).mutation(({ input }) =>
+    save: staffProcedure.input(z.object({ id: mongoId.optional(), values: ministryInput })).mutation(({ input }) =>
       db.saveMinistryPage({
         ...input.values,
         leaderName: blankToNull(input.values.leaderName),
@@ -154,11 +159,11 @@ export const contentRouter = router({
         heroImageUrl: blankToNull(input.values.heroImageUrl),
       }, input.id),
     ),
-    delete: staffProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.deleteMinistryPage(input.id)),
+    delete: staffProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteMinistryPage(input.id)),
   }),
   media: router({
     list: publicProcedure.query(() => db.listMedia()),
-    byId: publicProcedure.input(z.object({ id: z.number().int().positive() })).query(({ input }) => db.getMediaById(input.id)),
+    byId: publicProcedure.input(z.object({ id: mongoId })).query(({ input }) => db.getMediaById(input.id)),
     upload: editorProcedure.input(z.object({
       title: z.string().trim().min(3).max(255),
       altText: z.string().trim().max(255).optional().nullable(),
@@ -183,12 +188,12 @@ export const contentRouter = router({
         createdBy: ctx.user.id,
       });
     }),
-    setPublished: editorProcedure.input(z.object({ id: z.number(), isPublished: z.boolean() })).mutation(async ({ input }) => {
+    setPublished: editorProcedure.input(z.object({ id: mongoId, isPublished: z.boolean() })).mutation(async ({ input }) => {
       const current = (await db.listMedia(true)).find(media => media.id === input.id);
       if (!current) throw new TRPCError({ code: "NOT_FOUND", message: "Media item not found." });
       return db.saveMedia({ ...current, isPublished: input.isPublished }, input.id);
     }),
-    delete: editorProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.deleteMedia(input.id)),
+    delete: editorProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteMedia(input.id)),
   }),
   admin: router({
     summary: staffProcedure.query(() => db.getContentCounts()),

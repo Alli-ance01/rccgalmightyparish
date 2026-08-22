@@ -34,7 +34,7 @@ vi.mock("./db", () => dbMock);
 function contextFor(role: "user" | "member" | "worker" | "ministry_leader" | "editor" | "admin"): TrpcContext {
   return {
     user: {
-      id: 1,
+      id: "507f1f77bcf86cd799439011",
       openId: `tap-${role}`,
       name: "TAP Tester",
       email: "tester@tapchurch.org",
@@ -53,7 +53,7 @@ describe("TAP content router", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     dbMock.listSermons.mockResolvedValue([]);
-    dbMock.saveEvent.mockResolvedValue(1);
+    dbMock.saveEvent.mockResolvedValue("507f1f77bcf86cd799439012");
     dbMock.getMediaById.mockResolvedValue(undefined);
     dbMock.getContentCounts.mockResolvedValue({ sermons: 2, events: 1, posts: 3, media: 4, ministries: 5 });
   });
@@ -116,7 +116,7 @@ describe("TAP content router", () => {
         coverImageUrl: "",
         isPublished: true,
       },
-    })).resolves.toBe(1);
+    })).resolves.toBe("507f1f77bcf86cd799439012");
 
     expect(dbMock.saveEvent).toHaveBeenCalledWith(expect.objectContaining({
       title: "TAP Worship Night",
@@ -141,12 +141,13 @@ describe("TAP content router", () => {
 
   it("uses the public media lookup contract for individual gallery pages", async () => {
     const caller = appRouter.createCaller(contextFor("member"));
-    dbMock.getMediaById.mockResolvedValue({ id: 24, title: "Sunday Worship", isPublished: true });
+    const id = "507f1f77bcf86cd799439013";
+    dbMock.getMediaById.mockResolvedValue({ id, title: "Sunday Worship", isPublished: true });
 
-    await expect(caller.content.media.byId({ id: 24 })).resolves.toMatchObject({
-      id: 24,
+    await expect(caller.content.media.byId({ id })).resolves.toMatchObject({
+      id,
       title: "Sunday Worship",
     });
-    expect(dbMock.getMediaById).toHaveBeenCalledWith(24);
+    expect(dbMock.getMediaById).toHaveBeenCalledWith(id);
   });
 });

@@ -8,7 +8,7 @@ import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 type Tab = "overview" | "events" | "sermons" | "news" | "ministries" | "announcements" | "media";
-type Row = Record<string, unknown> & { id: number };
+type Row = Record<string, unknown> & { id: string };
 
 const tabItems: Array<{ id: Tab; label: string; icon: typeof CalendarDays }> = [
   { id: "overview", label: "Overview", icon: FilePlus2 },
@@ -35,7 +35,7 @@ function AdminWorkspace() {
   const isStaff = !!role && ["worker", "ministry_leader", "editor", "admin"].includes(role);
   const canEdit = !!role && ["editor", "admin"].includes(role);
   const [tab, setTab] = useState<Tab>("overview");
-  const [editing, setEditing] = useState<number | null>(null);
+  const [editing, setEditing] = useState<string | null>(null);
   const { data: summary, isLoading: summaryLoading, isError: summaryError, refetch: refetchSummary } = trpc.content.admin.summary.useQuery(undefined, { enabled: isStaff });
   const { data: all, isLoading: contentLoading, isError: contentError, refetch: refetchContent } = trpc.content.admin.all.useQuery(undefined, { enabled: isStaff });
 
@@ -58,7 +58,7 @@ function Overview({ summary, loading, setTab }: { summary?: { sermons: number; e
   return <div className="mt-8"><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">{cards.map(card => <button key={card.label} onClick={() => setTab(card.tab)} className="tap-button rounded-2xl border border-slate-200 bg-white p-5 text-left hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-900/5"><card.icon className="h-5 w-5 text-[#0b4ab8]" /><p className="mt-7 text-3xl font-extrabold text-[#10213e]">{loading ? "—" : card.count}</p><p className="mt-1 text-xs font-bold text-slate-500">{card.label}</p></button>)}</div><div className="mt-8 rounded-[1.4rem] bg-[#eaf2ff] p-7"><p className="eyebrow text-[#0b4ab8]">Editorial workflow</p><h2 className="display mt-4 text-4xl leading-[0.95] text-[#10213e]">Publish with accuracy.</h2><p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600">Every public page reads from this content workspace. Draft an item, check its details, then mark it published only when it is ready for the parish website.</p></div></div>;
 }
 
-function ContentWorkspace({ tab, canEdit, loading, rows, selected, onEdit, onCancel }: { tab: Exclude<Tab, "overview">; canEdit: boolean; loading: boolean; rows: Row[]; selected?: Row; onEdit: (id: number | null) => void; onCancel: () => void }) {
+function ContentWorkspace({ tab, canEdit, loading, rows, selected, onEdit, onCancel }: { tab: Exclude<Tab, "overview">; canEdit: boolean; loading: boolean; rows: Row[]; selected?: Row; onEdit: (id: string | null) => void; onCancel: () => void }) {
   const title = tab === "news" ? "article" : tab === "media" ? "media asset" : tab.slice(0, -1);
   return <div className="mt-8 grid gap-7 xl:grid-cols-[1fr_1.08fr]"><div><div className="flex items-center justify-between"><p className="text-sm font-extrabold text-[#10213e]">Published and draft content</p>{canEdit && <button onClick={() => onEdit(null)} className="tap-button inline-flex items-center gap-1.5 rounded-full bg-[#0b4ab8] px-3.5 py-2 text-xs font-extrabold text-white"><Plus className="h-3.5 w-3.5" />New {title}</button>}</div><div className="mt-4 space-y-3">{loading ? <div className="h-32 animate-pulse rounded-2xl bg-slate-200" /> : rows.length ? rows.map(row => <ContentRow key={row.id} row={row} onEdit={() => onEdit(row.id)} canEdit={canEdit} tab={tab} />) : <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6"><p className="font-extrabold text-[#10213e]">No {tab} created yet.</p><p className="mt-2 text-sm leading-6 text-slate-500">Use the editor to create the first {title} for the public site.</p></div>}</div></div><div className="xl:sticky xl:top-24 xl:self-start">{canEdit ? <Editor tab={tab} selected={selected} onDone={onCancel} /> : <div className="rounded-[1.4rem] border border-slate-200 bg-white p-7"><p className="font-extrabold text-[#10213e]">View-only staff access</p><p className="mt-3 text-sm leading-7 text-slate-600">Your role can review content but cannot publish or change it. Ask an editor or administrator for publishing access.</p></div>}</div></div>;
 }
@@ -70,7 +70,7 @@ function ContentRow({ row, onEdit, canEdit, tab }: { row: Row; onEdit: () => voi
   return <article className="rounded-2xl border border-slate-200 bg-white p-5"><div className="flex gap-4"><div className="min-w-0 flex-1"><p className="truncate font-extrabold text-[#10213e]">{title}</p><p className="mt-1 text-xs font-bold text-slate-500">{String(row.slug ?? row.category ?? row.mediaType ?? "TAP content")}</p></div><span className={`h-fit rounded-full px-2 py-1 text-[0.62rem] font-extrabold ${status === "Published" ? "bg-lime-100 text-lime-800" : "bg-slate-100 text-slate-500"}`}>{status}</span></div>{canEdit && <div className="mt-4 flex gap-2"><button onClick={onEdit} className="tap-button inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-extrabold text-slate-600 hover:border-[#0b4ab8] hover:text-[#0b4ab8]"><Pencil className="h-3.5 w-3.5" />Edit</button><DeleteButton /></div>}</article>;
 }
 
-function DeleteContent({ id, tab }: { id: number; tab: Tab }) {
+function DeleteContent({ id, tab }: { id: string; tab: Tab }) {
   const utils = trpc.useUtils();
   const [failure, setFailure] = useState<string | null>(null);
   const mutation = tab === "events" ? trpc.content.events.delete.useMutation() : tab === "sermons" ? trpc.content.sermons.delete.useMutation() : tab === "news" ? trpc.content.posts.delete.useMutation() : tab === "ministries" ? trpc.content.ministries.delete.useMutation() : tab === "announcements" ? trpc.content.announcements.delete.useMutation() : trpc.content.media.delete.useMutation();

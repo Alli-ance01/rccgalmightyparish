@@ -32,6 +32,12 @@
 - [ ] Prepare Vercel frontend deployment settings and document the required production environment variables.
 - [ ] Confirm the compatible backend deployment, CORS origin, OAuth callback configuration, database connectivity, and S3 media settings for the Vercel frontend.
 - [ ] Deploy the TAP frontend on Vercel and verify key public and staff routes in production.
+- [ ] Create the Render API web service from the committed `render.yaml` configuration and capture its public URL.
+- [ ] Configure Render production secrets, the final Vercel CORS origin, frontend return URL, and OAuth callback before enabling staff login.
+- [ ] Provide the user with a self-service Render-to-Vercel deployment walkthrough and production verification checklist.
+- [ ] Replace the Manus-bound OAuth and Forge storage dependencies with externally managed production authentication and S3-compatible storage before enabling external staff login or media uploads.
+- [x] Migrate the SQL/Drizzle persistence layer, content repositories, and session-backed user records to MongoDB.
+- [x] Replace SQL-specific migration and Render database instructions with MongoDB Atlas-compatible setup and deployment documentation.
 - [x] Publish the supplied official parish phone, email, full church address, OPay giving details, and Sunday service times while retaining clearly labelled provisional content where information is unavailable.
 - [x] Add route-change scroll restoration so internal navigation begins at the top of the destination page.
 - [x] Add regression tests for the route-scroll behavior and the updated public contact/giving/service information.

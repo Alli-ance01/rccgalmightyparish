@@ -23,7 +23,7 @@ Before the first Render deployment, set the following server-side variables ther
 
 | Variable | Purpose |
 | --- | --- |
-| `DATABASE_URL` | Production MySQL/TiDB connection string used by Drizzle. |
+| `MONGODB_URI` | Production MongoDB Atlas connection string used by the MongoDB Node.js driver. |
 | `JWT_SECRET` | Long random production session-signing secret. |
 | `CORS_ORIGIN` | Vercel frontend URL, for example `https://tap-church.vercel.app`. |
 | `WEB_APP_URL` | Same Vercel frontend URL; used after sign-in. |

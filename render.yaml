@@ -10,7 +10,7 @@ services:
         value: production
       - key: API_ONLY
         value: "true"
-      - key: DATABASE_URL
+      - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
         generateValue: true

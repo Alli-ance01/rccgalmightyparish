@@ -1,296 +1,212 @@
-import { desc, eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
-import {
-  announcements,
-  events,
+import { Db, MongoClient, ObjectId, type Document, type Filter, type WithId } from "mongodb";
+import type {
+  Announcement,
+  Event,
   InsertUser,
-  mediaAssets,
-  ministryPages,
-  posts,
-  sermons,
-  users,
-} from "../drizzle/schema";
+  MediaAsset,
+  MinistryPage,
+  NewAnnouncement,
+  NewEvent,
+  NewMediaAsset,
+  NewMinistryPage,
+  NewPost,
+  NewSermon,
+  Post,
+  Sermon,
+  User,
+} from "./models";
 import { ENV } from "./_core/env";
 
-let _db: ReturnType<typeof drizzle> | null = null;
+let client: MongoClient | null = null;
+let database: Db | null = null;
+let connection: Promise<Db> | null = null;
 
-export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
-    try {
-      _db = drizzle(process.env.DATABASE_URL);
-    } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
-      _db = null;
-    }
+function collection(name: string) {
+  if (!database) throw new Error("MongoDB is unavailable");
+  return database.collection<Document>(name);
+}
+
+function asId(id: string) {
+  if (!ObjectId.isValid(id)) throw new Error("Invalid MongoDB record ID");
+  return new ObjectId(id);
+}
+
+function serialize<T>(record: WithId<Document>): T {
+  const { _id, ...value } = record;
+  return { ...value, id: _id.toHexString() } as T;
+}
+
+async function ensureIndexes(db: Db) {
+  await Promise.all([
+    db.collection("users").createIndex({ openId: 1 }, { unique: true }),
+    db.collection("sermons").createIndex({ slug: 1 }, { unique: true }),
+    db.collection("events").createIndex({ slug: 1 }, { unique: true }),
+    db.collection("posts").createIndex({ slug: 1 }, { unique: true }),
+    db.collection("ministryPages").createIndex({ slug: 1 }, { unique: true }),
+  ]);
+}
+
+export async function getDb(): Promise<Db | null> {
+  if (database) return database;
+  if (!ENV.mongoUrl) {
+    console.warn("[MongoDB] MONGODB_URI is not configured");
+    return null;
   }
-  return _db;
+  if (!connection) {
+    connection = (async () => {
+      client = new MongoClient(ENV.mongoUrl);
+      await client.connect();
+      database = client.db();
+      await ensureIndexes(database);
+      return database;
+    })().catch(error => {
+      connection = null;
+      client = null;
+      database = null;
+      throw error;
+    });
+  }
+  try {
+    return await connection;
+  } catch (error) {
+    console.warn("[MongoDB] Failed to connect:", error);
+    return null;
+  }
+}
+
+async function requireDb() {
+  const db = await getDb();
+  if (!db) throw new Error("MongoDB is unavailable");
+  return db;
+}
+
+async function saveRecord<T extends Document>(name: string, values: T, id?: string) {
+  await requireDb();
+  const now = new Date();
+  if (id) {
+    await collection(name).updateOne({ _id: asId(id) }, { $set: { ...values, updatedAt: now } });
+    return id;
+  }
+  const result = await collection(name).insertOne({ ...values, createdAt: now, updatedAt: now });
+  return result.insertedId.toHexString();
+}
+
+async function deleteRecord(name: string, id: string) {
+  await requireDb();
+  await collection(name).deleteOne({ _id: asId(id) });
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {
   if (!user.openId) throw new Error("User openId is required for upsert");
-  const db = await getDb();
-  if (!db) return;
-
-  const values: InsertUser = { openId: user.openId };
-  const updateSet: Record<string, unknown> = {};
-  const textFields = ["name", "email", "loginMethod"] as const;
-  textFields.forEach(field => {
-    if (user[field] !== undefined) {
-      const normalized = user[field] ?? null;
-      values[field] = normalized;
-      updateSet[field] = normalized;
-    }
-  });
-
-  if (user.lastSignedIn !== undefined) {
-    values.lastSignedIn = user.lastSignedIn;
-    updateSet.lastSignedIn = user.lastSignedIn;
-  } else {
-    values.lastSignedIn = new Date();
-    updateSet.lastSignedIn = values.lastSignedIn;
-  }
-
-  if (user.role !== undefined) {
-    values.role = user.role;
-    updateSet.role = user.role;
-  } else if (user.openId === ENV.ownerOpenId) {
-    values.role = "admin";
-    updateSet.role = "admin";
-  }
-
-  await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
-}
-
-export async function getUserByOpenId(openId: string) {
-  const db = await getDb();
-  if (!db) return undefined;
-  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-  return result[0];
-}
-
-export async function listSermons(filters?: {
-  search?: string;
-  series?: string;
-  speaker?: string;
-  from?: Date;
-  to?: Date;
-  includeUnpublished?: boolean;
-}) {
-  const db = await getDb();
-  if (!db) return [];
-  const rows = await db
-    .select()
-    .from(sermons)
-    .orderBy(desc(sermons.publishedAt), desc(sermons.createdAt));
-  const term = filters?.search?.trim().toLowerCase();
-  return rows.filter(row => {
-    if (!filters?.includeUnpublished && !row.isPublished) return false;
-    if (filters?.series && row.series !== filters.series) return false;
-    if (filters?.speaker && row.speaker !== filters.speaker) return false;
-    if (filters?.from && (!row.publishedAt || row.publishedAt < filters.from)) return false;
-    if (filters?.to && (!row.publishedAt || row.publishedAt > filters.to)) return false;
-    if (!term) return true;
-    return [row.title, row.summary, row.speaker, row.series]
-      .join(" ")
-      .toLowerCase()
-      .includes(term);
-  });
-}
-
-export async function getSermonBySlug(slug: string, includeUnpublished = false) {
-  const db = await getDb();
-  if (!db) return undefined;
-  const rows = await db.select().from(sermons).where(eq(sermons.slug, slug)).limit(1);
-  const row = rows[0];
-  return row && (includeUnpublished || row.isPublished) ? row : undefined;
-}
-
-export async function saveSermon(values: typeof sermons.$inferInsert, id?: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
-  if (id) {
-    await db.update(sermons).set({ ...values, updatedAt: new Date() }).where(eq(sermons.id, id));
-    return id;
-  }
-  const result = await db.insert(sermons).values(values);
-  return result[0].insertId;
-}
-
-export async function deleteSermon(id: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
-  await db.delete(sermons).where(eq(sermons.id, id));
-}
-
-export async function listEvents(includeUnpublished = false) {
-  const db = await getDb();
-  if (!db) return [];
-  const rows = await db.select().from(events).orderBy(desc(events.startsAt));
-  return includeUnpublished ? rows : rows.filter(row => row.isPublished);
-}
-
-export async function getEventBySlug(slug: string, includeUnpublished = false) {
-  const db = await getDb();
-  if (!db) return undefined;
-  const rows = await db.select().from(events).where(eq(events.slug, slug)).limit(1);
-  const row = rows[0];
-  return row && (includeUnpublished || row.isPublished) ? row : undefined;
-}
-
-export async function saveEvent(values: typeof events.$inferInsert, id?: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
-  if (id) {
-    await db.update(events).set({ ...values, updatedAt: new Date() }).where(eq(events.id, id));
-    return id;
-  }
-  const result = await db.insert(events).values(values);
-  return result[0].insertId;
-}
-
-export async function deleteEvent(id: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
-  await db.delete(events).where(eq(events.id, id));
-}
-
-export async function listPosts(category?: string, includeUnpublished = false) {
-  const db = await getDb();
-  if (!db) return [];
-  const rows = await db.select().from(posts).orderBy(desc(posts.publishedAt), desc(posts.createdAt));
-  return rows.filter(row =>
-    (includeUnpublished || row.isPublished) && (!category || row.category === category),
+  await requireDb();
+  const now = new Date();
+  const role = user.role ?? (user.openId === ENV.ownerOpenId ? "admin" : "member");
+  await collection("users").updateOne(
+    { openId: user.openId },
+    {
+      $set: {
+        name: user.name ?? null,
+        email: user.email ?? null,
+        loginMethod: user.loginMethod ?? null,
+        lastSignedIn: user.lastSignedIn ?? now,
+        updatedAt: now,
+      },
+      $setOnInsert: { openId: user.openId, role, createdAt: now },
+    },
+    { upsert: true },
   );
 }
 
-export async function getPostBySlug(slug: string, includeUnpublished = false) {
+export async function getUserByOpenId(openId: string): Promise<User | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const rows = await db.select().from(posts).where(eq(posts.slug, slug)).limit(1);
-  const row = rows[0];
-  return row && (includeUnpublished || row.isPublished) ? row : undefined;
+  const user = await collection("users").findOne({ openId });
+  return user ? serialize<User>(user) : undefined;
 }
 
-export async function savePost(values: typeof posts.$inferInsert, id?: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
-  if (id) {
-    await db.update(posts).set({ ...values, updatedAt: new Date() }).where(eq(posts.id, id));
-    return id;
-  }
-  const result = await db.insert(posts).values(values);
-  return result[0].insertId;
-}
-
-export async function deletePost(id: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
-  await db.delete(posts).where(eq(posts.id, id));
-}
-
-export async function listAnnouncements(includeInactive = false) {
+export async function listSermons(filters?: { search?: string; series?: string; speaker?: string; from?: Date; to?: Date; includeUnpublished?: boolean }): Promise<Sermon[]> {
   const db = await getDb();
   if (!db) return [];
-  const rows = await db.select().from(announcements).orderBy(desc(announcements.createdAt));
-  return includeInactive ? rows : rows.filter(row => row.isActive);
-}
-
-export async function saveAnnouncement(values: typeof announcements.$inferInsert, id?: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
-  if (id) {
-    await db.update(announcements).set({ ...values, updatedAt: new Date() }).where(eq(announcements.id, id));
-    return id;
+  const query: Filter<Document> = filters?.includeUnpublished ? {} : { isPublished: true };
+  if (filters?.series) query.series = filters.series;
+  if (filters?.speaker) query.speaker = filters.speaker;
+  if (filters?.from || filters?.to) query.publishedAt = { ...(filters.from ? { $gte: filters.from } : {}), ...(filters.to ? { $lte: filters.to } : {}) };
+  if (filters?.search?.trim()) {
+    const search = new RegExp(filters.search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    query.$or = [{ title: search }, { summary: search }, { speaker: search }, { series: search }];
   }
-  const result = await db.insert(announcements).values(values);
-  return result[0].insertId;
+  return (await collection("sermons").find(query).sort({ publishedAt: -1, createdAt: -1 }).toArray()).map(serialize<Sermon>);
 }
 
-export async function deleteAnnouncement(id: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
-  await db.delete(announcements).where(eq(announcements.id, id));
-}
-
-export async function listMinistryPages(audience?: "main" | "junior", includeUnpublished = false) {
-  const db = await getDb();
-  if (!db) return [];
-  const rows = await db.select().from(ministryPages).orderBy(desc(ministryPages.createdAt));
-  return rows.filter(row =>
-    (includeUnpublished || row.isPublished) && (!audience || row.audience === audience),
-  );
-}
-
-export async function getMinistryBySlug(slug: string, includeUnpublished = false) {
+export async function getSermonBySlug(slug: string, includeUnpublished = false): Promise<Sermon | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const rows = await db.select().from(ministryPages).where(eq(ministryPages.slug, slug)).limit(1);
-  const row = rows[0];
-  return row && (includeUnpublished || row.isPublished) ? row : undefined;
+  const record = await collection("sermons").findOne(includeUnpublished ? { slug } : { slug, isPublished: true });
+  return record ? serialize<Sermon>(record) : undefined;
 }
+export const saveSermon = (values: NewSermon, id?: string) => saveRecord("sermons", values, id);
+export const deleteSermon = (id: string) => deleteRecord("sermons", id);
 
-export async function saveMinistryPage(values: typeof ministryPages.$inferInsert, id?: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
-  if (id) {
-    await db.update(ministryPages).set({ ...values, updatedAt: new Date() }).where(eq(ministryPages.id, id));
-    return id;
-  }
-  const result = await db.insert(ministryPages).values(values);
-  return result[0].insertId;
+export async function listEvents(includeUnpublished = false): Promise<Event[]> {
+  const db = await getDb(); if (!db) return [];
+  return (await collection("events").find(includeUnpublished ? {} : { isPublished: true }).sort({ startsAt: -1 }).toArray()).map(serialize<Event>);
 }
+export async function getEventBySlug(slug: string, includeUnpublished = false): Promise<Event | undefined> {
+  const db = await getDb(); if (!db) return undefined;
+  const record = await collection("events").findOne(includeUnpublished ? { slug } : { slug, isPublished: true });
+  return record ? serialize<Event>(record) : undefined;
+}
+export const saveEvent = (values: NewEvent, id?: string) => saveRecord("events", values, id);
+export const deleteEvent = (id: string) => deleteRecord("events", id);
 
-export async function deleteMinistryPage(id: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
-  await db.delete(ministryPages).where(eq(ministryPages.id, id));
+export async function listPosts(category?: string, includeUnpublished = false): Promise<Post[]> {
+  const db = await getDb(); if (!db) return [];
+  const query: Filter<Document> = { ...(includeUnpublished ? {} : { isPublished: true }), ...(category ? { category } : {}) };
+  return (await collection("posts").find(query).sort({ publishedAt: -1, createdAt: -1 }).toArray()).map(serialize<Post>);
 }
+export async function getPostBySlug(slug: string, includeUnpublished = false): Promise<Post | undefined> {
+  const db = await getDb(); if (!db) return undefined;
+  const record = await collection("posts").findOne(includeUnpublished ? { slug } : { slug, isPublished: true });
+  return record ? serialize<Post>(record) : undefined;
+}
+export const savePost = (values: NewPost, id?: string) => saveRecord("posts", values, id);
+export const deletePost = (id: string) => deleteRecord("posts", id);
 
-export async function listMedia(includeUnpublished = false) {
-  const db = await getDb();
-  if (!db) return [];
-  const rows = await db.select().from(mediaAssets).orderBy(desc(mediaAssets.createdAt));
-  return includeUnpublished ? rows : rows.filter(row => row.isPublished);
+export async function listAnnouncements(includeInactive = false): Promise<Announcement[]> {
+  const db = await getDb(); if (!db) return [];
+  return (await collection("announcements").find(includeInactive ? {} : { isActive: true }).sort({ createdAt: -1 }).toArray()).map(serialize<Announcement>);
 }
+export const saveAnnouncement = (values: NewAnnouncement, id?: string) => saveRecord("announcements", values, id);
+export const deleteAnnouncement = (id: string) => deleteRecord("announcements", id);
 
-export async function getMediaById(id: number, includeUnpublished = false) {
-  const db = await getDb();
-  if (!db) return undefined;
-  const rows = await db.select().from(mediaAssets).where(eq(mediaAssets.id, id)).limit(1);
-  const row = rows[0];
-  return row && (includeUnpublished || row.isPublished) ? row : undefined;
+export async function listMinistryPages(audience?: "main" | "junior", includeUnpublished = false): Promise<MinistryPage[]> {
+  const db = await getDb(); if (!db) return [];
+  const query: Filter<Document> = { ...(includeUnpublished ? {} : { isPublished: true }), ...(audience ? { audience } : {}) };
+  return (await collection("ministryPages").find(query).sort({ createdAt: -1 }).toArray()).map(serialize<MinistryPage>);
 }
+export async function getMinistryBySlug(slug: string, includeUnpublished = false): Promise<MinistryPage | undefined> {
+  const db = await getDb(); if (!db) return undefined;
+  const record = await collection("ministryPages").findOne(includeUnpublished ? { slug } : { slug, isPublished: true });
+  return record ? serialize<MinistryPage>(record) : undefined;
+}
+export const saveMinistryPage = (values: NewMinistryPage, id?: string) => saveRecord("ministryPages", values, id);
+export const deleteMinistryPage = (id: string) => deleteRecord("ministryPages", id);
 
-export async function saveMedia(values: typeof mediaAssets.$inferInsert, id?: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
-  if (id) {
-    await db.update(mediaAssets).set({ ...values, updatedAt: new Date() }).where(eq(mediaAssets.id, id));
-    return id;
-  }
-  const result = await db.insert(mediaAssets).values(values);
-  return result[0].insertId;
+export async function listMedia(includeUnpublished = false): Promise<MediaAsset[]> {
+  const db = await getDb(); if (!db) return [];
+  return (await collection("mediaAssets").find(includeUnpublished ? {} : { isPublished: true }).sort({ createdAt: -1 }).toArray()).map(serialize<MediaAsset>);
 }
-
-export async function deleteMedia(id: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
-  await db.delete(mediaAssets).where(eq(mediaAssets.id, id));
+export async function getMediaById(id: string, includeUnpublished = false): Promise<MediaAsset | undefined> {
+  const db = await getDb(); if (!db || !ObjectId.isValid(id)) return undefined;
+  const record = await collection("mediaAssets").findOne(includeUnpublished ? { _id: new ObjectId(id) } : { _id: new ObjectId(id), isPublished: true });
+  return record ? serialize<MediaAsset>(record) : undefined;
 }
+export const saveMedia = (values: NewMediaAsset, id?: string) => saveRecord("mediaAssets", values, id);
+export const deleteMedia = (id: string) => deleteRecord("mediaAssets", id);
 
 export async function getContentCounts() {
-  const [sermonRows, eventRows, postRows, mediaRows, ministryRows] = await Promise.all([
-    listSermons({ includeUnpublished: true }),
-    listEvents(true),
-    listPosts(undefined, true),
-    listMedia(true),
-    listMinistryPages(undefined, true),
-  ]);
-  return {
-    sermons: sermonRows.length,
-    events: eventRows.length,
-    posts: postRows.length,
-    media: mediaRows.length,
-    ministries: ministryRows.length,
-  };
+  const db = await getDb();
+  if (!db) return { sermons: 0, events: 0, posts: 0, media: 0, ministries: 0 };
+  const [sermons, events, posts, media, ministries] = await Promise.all(["sermons", "events", "posts", "mediaAssets", "ministryPages"].map(name => collection(name).countDocuments()));
+  return { sermons, events, posts, media, ministries };
 }
