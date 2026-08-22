@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { storagePut } from "../storage";
 import * as db from "../db";
+import { cloudinaryConfigurationStatus, uploadToCloudinary, verifyCloudinaryConfiguration } from "../cloudinary";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 
 const staffProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -164,26 +164,35 @@ export const contentRouter = router({
   media: router({
     list: publicProcedure.query(() => db.listMedia()),
     byId: publicProcedure.input(z.object({ id: mongoId })).query(({ input }) => db.getMediaById(input.id)),
+    cloudinaryStatus: editorProcedure.query(() => cloudinaryConfigurationStatus()),
+    verifyCloudinary: editorProcedure.mutation(async () => {
+      const result = await verifyCloudinaryConfiguration();
+      if (!result.verified) throw new TRPCError({ code: "PRECONDITION_FAILED", message: result.message });
+      return result;
+    }),
     upload: editorProcedure.input(z.object({
       title: z.string().trim().min(3).max(255),
       altText: z.string().trim().max(255).optional().nullable(),
       mediaType: z.enum(["image", "video", "document"]),
       filename: z.string().trim().min(1).max(255),
       mimeType: z.string().trim().min(3).max(160),
-      dataUrl: z.string().min(20),
+      dataUrl: z.string().min(20).max(25 * 1024 * 1024, "Choose a file smaller than 18 MB for this initial upload flow."),
       isPublished: z.boolean(),
     })).mutation(async ({ ctx, input }) => {
-      const base64 = input.dataUrl.includes(",") ? input.dataUrl.split(",")[1] : input.dataUrl;
-      if (!base64) throw new TRPCError({ code: "BAD_REQUEST", message: "The selected file could not be read." });
-      const key = `tap-media/${ctx.user.id}/${Date.now()}-${sanitizeFilename(input.filename)}`;
-      const uploaded = await storagePut(key, Buffer.from(base64, "base64"), input.mimeType);
+      if (!input.dataUrl.includes(",")) throw new TRPCError({ code: "BAD_REQUEST", message: "The selected file could not be read." });
+      let uploaded: Awaited<ReturnType<typeof uploadToCloudinary>>;
+      try {
+        uploaded = await uploadToCloudinary({ dataUrl: input.dataUrl, mediaType: input.mediaType, filename: sanitizeFilename(input.filename), contentType: input.mimeType, uploaderId: ctx.user.id });
+      } catch (error) {
+        throw new TRPCError({ code: "PRECONDITION_FAILED", message: error instanceof Error ? error.message : "Cloudinary upload failed." });
+      }
       return db.saveMedia({
         title: input.title,
         altText: blankToNull(input.altText),
         mediaType: input.mediaType,
-        storageKey: uploaded.key,
-        url: uploaded.url,
-        mimeType: input.mimeType,
+        storageKey: uploaded.publicId,
+        url: uploaded.secureUrl,
+        mimeType: uploaded.mimeType,
         isPublished: input.isPublished,
         createdBy: ctx.user.id,
       });
