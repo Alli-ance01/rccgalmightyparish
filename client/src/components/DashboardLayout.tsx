@@ -19,9 +19,8 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { startLogin } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { CalendarDays, Images, LayoutDashboard, LogOut, Megaphone, Newspaper, PanelLeft, Users, Video } from "lucide-react";
+import { CalendarDays, Images, LayoutDashboard, LogOut, Megaphone, Newspaper, PanelLeft, ShieldCheck, Users, Video } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -35,6 +34,7 @@ const menuItems = [
   { icon: Users, label: "Ministries", path: "/admin?tab=ministries" },
   { icon: Megaphone, label: "Announcements", path: "/admin?tab=announcements" },
   { icon: Images, label: "Media", path: "/admin?tab=media" },
+  { icon: ShieldCheck, label: "Access requests", path: "/admin/approvals" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -70,15 +70,15 @@ export default function DashboardLayout({
               Sign in to continue
             </h1>
             <p className="text-sm text-muted-foreground text-center max-w-sm">
-              Access to this dashboard requires authentication. Continue to launch the login flow.
+              Access to this dashboard requires an approved staff account.
             </p>
           </div>
           <Button
-            onClick={() => startLogin()}
+            onClick={() => { window.location.href = "/sign-in"; }}
             size="lg"
             className="w-full shadow-lg hover:shadow-xl transition-all"
           >
-            Sign in
+            Go to sign in
           </Button>
         </div>
       </div>

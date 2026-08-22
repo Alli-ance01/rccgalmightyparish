@@ -3,7 +3,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import About from "./pages/About";
+import Account from "./pages/Account";
 import Admin from "./pages/Admin";
+import Approvals from "./pages/Approvals";
 import Contact from "./pages/Contact";
 import EventDetail from "./pages/EventDetail";
 import Events from "./pages/Events";
@@ -13,6 +15,7 @@ import JuniorChurch from "./pages/JuniorChurch";
 import Leadership from "./pages/Leadership";
 import Media from "./pages/Media";
 import MediaDetail from "./pages/MediaDetail";
+import MasterSetup from "./pages/MasterSetup";
 import Ministries from "./pages/Ministries";
 import MinistryDetail from "./pages/MinistryDetail";
 import News from "./pages/News";
@@ -20,6 +23,7 @@ import NotFound from "./pages/NotFound";
 import PostDetail from "./pages/PostDetail";
 import SermonDetail from "./pages/SermonDetail";
 import Sermons from "./pages/Sermons";
+import SignIn from "./pages/SignIn";
 import Visit from "./pages/Visit";
 import { useEffect } from "react";
 import { resetRouteScroll } from "./lib/scroll";
@@ -50,7 +54,11 @@ function Router() {
     <Route path="/media/:id" component={MediaDetail} />
     <Route path="/news" component={News} />
     <Route path="/news/:slug" component={PostDetail} />
+    <Route path="/sign-in" component={SignIn} />
+    <Route path="/account" component={Account} />
+    <Route path="/master-setup" component={MasterSetup} />
     <Route path="/admin" component={Admin} />
+    <Route path="/admin/approvals" component={Approvals} />
     <Route component={NotFound} />
   </Switch>;
 }

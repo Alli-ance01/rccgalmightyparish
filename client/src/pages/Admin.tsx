@@ -32,8 +32,8 @@ export default function Admin() {
 function AdminWorkspace() {
   const { user, loading } = useAuth();
   const role = user?.role;
-  const isStaff = !!role && ["worker", "ministry_leader", "editor", "admin"].includes(role);
-  const canEdit = !!role && ["editor", "admin"].includes(role);
+  const isStaff = !!role && ["worker", "ministry_leader", "editor", "admin", "master_admin"].includes(role);
+  const canEdit = !!role && ["editor", "admin", "master_admin"].includes(role);
   const [tab, setTab] = useState<Tab>("overview");
   const [editing, setEditing] = useState<string | null>(null);
   const { data: summary, isLoading: summaryLoading, isError: summaryError, refetch: refetchSummary } = trpc.content.admin.summary.useQuery(undefined, { enabled: isStaff });

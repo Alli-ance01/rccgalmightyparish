@@ -41,6 +41,13 @@
 - [x] Consolidate the deployment documentation into one beginner-friendly MongoDB Atlas, Render, and Vercel launch checklist that lists only required first-launch variables.
 - [ ] Remove the development-only OAuth startup warning from the public-only Render API runtime and confirm its health endpoint.
 - [ ] Record the live Render API URL in the Vercel deployment handoff and guide the frontend connection steps.
+- [ ] Verify the live Vercel public website against the Render API after CORS and web-app origin settings are configured.
+- [ ] Complete the post-launch public-route, contact/giving-content, and browser-console checklist; keep deferred admin login and media upload disabled.
+- [x] Replace the development-only OAuth scaffold with a production staff authentication provider controlled by TAP Church.
+- [ ] Replace development media storage with Cloudinary-backed upload, delivery, and media metadata handling.
+- [x] Implement MongoDB-backed email-and-password staff accounts with pending access requests, master-admin approval, rejection, role assignment, and role-based workspace access.
+- [x] Add regular member registration with limited account access alongside staff access requests, and restrict one-time Master Admin setup to timileyinogunderekingmex@gmail.com.
 - [x] Publish the supplied official parish phone, email, full church address, OPay giving details, and Sunday service times while retaining clearly labelled provisional content where information is unavailable.
 - [x] Add route-change scroll restoration so internal navigation begins at the top of the destination page.
 - [x] Add regression tests for the route-scroll behavior and the updated public contact/giving/service information.
+- [ ] Validate the configured Cloudinary credential set without exposing its values, then commit and push the custom account and Master Admin foundation to GitHub.

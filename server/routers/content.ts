@@ -6,7 +6,7 @@ import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 
 const staffProcedure = protectedProcedure.use(({ ctx, next }) => {
   const role = ctx.user.role;
-  if (!["worker", "ministry_leader", "editor", "admin"].includes(role)) {
+  if (!["worker", "ministry_leader", "editor", "admin", "master_admin"].includes(role)) {
     throw new TRPCError({ code: "FORBIDDEN", message: "Staff access is required." });
   }
   return next({ ctx });
@@ -14,7 +14,7 @@ const staffProcedure = protectedProcedure.use(({ ctx, next }) => {
 
 const editorProcedure = protectedProcedure.use(({ ctx, next }) => {
   const role = ctx.user.role;
-  if (!["editor", "admin"].includes(role)) {
+  if (!["editor", "admin", "master_admin"].includes(role)) {
     throw new TRPCError({ code: "FORBIDDEN", message: "Editor or administrator access is required." });
   }
   return next({ ctx });

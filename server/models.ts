@@ -1,19 +1,31 @@
-export const USER_ROLES = ["user", "member", "worker", "ministry_leader", "editor", "admin"] as const;
+export const USER_ROLES = ["member", "worker", "ministry_leader", "editor", "admin", "master_admin"] as const;
 export type UserRole = (typeof USER_ROLES)[number];
+export const ACCOUNT_TYPES = ["member", "staff"] as const;
+export type AccountType = (typeof ACCOUNT_TYPES)[number];
+export const ACCOUNT_STATUSES = ["active", "pending", "rejected", "suspended"] as const;
+export type AccountStatus = (typeof ACCOUNT_STATUSES)[number];
 
 export type User = {
   id: string;
   openId: string;
-  name: string | null;
-  email: string | null;
-  loginMethod: string | null;
+  name: string;
+  email: string;
+  passwordHash: string;
+  accountType: AccountType;
+  accountStatus: AccountStatus;
   role: UserRole;
+  requestedRole: Exclude<UserRole, "master_admin"> | null;
+  requestNote: string | null;
+  approvalNote: string | null;
+  approvedBy: string | null;
+  approvedAt: Date | null;
+  suspendedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   lastSignedIn: Date;
 };
 
-export type InsertUser = Pick<User, "openId"> & Partial<Pick<User, "name" | "email" | "loginMethod" | "role" | "lastSignedIn">>;
+export type PublicUser = Omit<User, "passwordHash">;
 
 type Entity = { id: string; createdAt: Date; updatedAt: Date };
 

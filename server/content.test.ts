@@ -31,15 +31,23 @@ const dbMock = vi.hoisted(() => ({
 
 vi.mock("./db", () => dbMock);
 
-function contextFor(role: "user" | "member" | "worker" | "ministry_leader" | "editor" | "admin"): TrpcContext {
+function contextFor(role: "member" | "worker" | "ministry_leader" | "editor" | "admin" | "master_admin"): TrpcContext {
   return {
     user: {
       id: "507f1f77bcf86cd799439011",
       openId: `tap-${role}`,
       name: "TAP Tester",
       email: "tester@tapchurch.org",
-      loginMethod: "manus",
+      passwordHash: "test-hash",
+      accountType: role === "member" ? "member" : "staff",
+      accountStatus: "active",
       role,
+      requestedRole: null,
+      requestNote: null,
+      approvalNote: null,
+      approvedBy: null,
+      approvedAt: null,
+      suspendedAt: null,
       createdAt: new Date(),
       updatedAt: new Date(),
       lastSignedIn: new Date(),
