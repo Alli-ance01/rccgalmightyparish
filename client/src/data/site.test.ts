@@ -13,7 +13,7 @@ describe("TAP public information", () => {
       "Super Teens",
       "Lower Teens",
       "Preteens/9–12",
-      "6–6",
+      "6–8",
       "3–5",
     ]);
   });

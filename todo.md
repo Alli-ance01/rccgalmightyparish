@@ -39,6 +39,8 @@
 - [x] Migrate the SQL/Drizzle persistence layer, content repositories, and session-backed user records to MongoDB.
 - [x] Replace SQL-specific migration and Render database instructions with MongoDB Atlas-compatible setup and deployment documentation.
 - [x] Consolidate the deployment documentation into one beginner-friendly MongoDB Atlas, Render, and Vercel launch checklist that lists only required first-launch variables.
+- [ ] Remove the development-only OAuth startup warning from the public-only Render API runtime and confirm its health endpoint.
+- [ ] Record the live Render API URL in the Vercel deployment handoff and guide the frontend connection steps.
 - [x] Publish the supplied official parish phone, email, full church address, OPay giving details, and Sunday service times while retaining clearly labelled provisional content where information is unavailable.
 - [x] Add route-change scroll restoration so internal navigation begins at the top of the destination page.
 - [x] Add regression tests for the route-scroll behavior and the updated public contact/giving/service information.
