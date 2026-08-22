@@ -52,3 +52,4 @@
 - [x] Add regression tests for the route-scroll behavior and the updated public contact/giving/service information.
 - [ ] Validate the configured Cloudinary credential set without exposing its values.
 - [x] Commit and push the custom account and Master Admin foundation to GitHub.
+- [ ] Diagnose and fix the production Master Admin setup and sign-in response parsing failure between Vercel and Render.
