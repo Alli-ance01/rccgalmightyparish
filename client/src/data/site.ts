@@ -34,7 +34,7 @@ export const juniorGroups = [
   { name: "Super Teens", age: "Teen community", accent: "orange", line: "Real conversations, brave faith, and big purpose." },
   { name: "Lower Teens", age: "Teen community", accent: "lime", line: "Growing in confidence, friendship, and Jesus." },
   { name: "Preteens/9–12", age: "Ages 9–12", accent: "pink", line: "Curious minds, strong roots, and joyful discovery." },
-  { name: "6–6", age: "Ages 6–6", accent: "sky", line: "A playful space to learn God’s love and truth." },
+  { name: "6–8", age: "Ages 6–8", accent: "sky", line: "A playful space to learn God’s love and truth." },
   { name: "3–5", age: "Ages 3–5", accent: "purple", line: "Big wonder for little hearts." },
 ];
 
