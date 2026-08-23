@@ -29,3 +29,19 @@ The public production `/sign-in` route was opened directly in the automation bro
 The user subsequently confirmed that staff sign-in and Administration work in their normal browser. The blank black takeover surface is therefore not a live TAP production rendering failure. Production staff authentication is considered validated through the normal browser session; the automation takeover surface remains unsuitable for authenticated session testing.
 
 The user then confirmed from the normal Master Admin browser session that the Administration workflow works and **Cloudinary Verify connection** was accepted. This validates the Render-side Cloudinary credentials without exposing them. The user also confirmed the requested access-management view was working after opening it from the Admin session.
+
+After the subsequent staff-status presentation push, the public sign-in page remained healthy but the currently loaded Vercel JavaScript bundle did not yet contain the new `Rejected requests` and `Suspended staff` labels. The connected Vercel deployment therefore still needs to finish propagating the latest GitHub `main` commit before the updated approvals interface can be validated in production.
+
+The Vercel bundle was rechecked after a short deployment interval and now contains both `Rejected requests` and `Suspended staff` labels. This confirms GitHub commit `3ac283b` has propagated to the production frontend. A final signed-in visual check of `/admin/approvals` remains required to confirm the individual sections and empty states render as intended.
+
+The user refreshed `/admin/approvals` in their normal signed-in Master Admin browser and confirmed that the updated sections are visible. The live workspace now clearly separates Pending requests, Active staff, Rejected requests, and Suspended staff.
+
+## Responsive QA
+
+An eight-route desktop and mobile QA pass was completed in the current build for Home, Announcements, Media, Sermons, Events, News, Ministries, and Account. The responsive header collapses to a mobile menu, public content filters stack correctly on small screens, cards remain readable, and the tested empty/account states preserve their visual hierarchy. The sandbox preview has no MongoDB secret, so archive screenshots correctly show no-content states rather than the live database records.
+
+The user completed the corresponding normal-browser QA for signed-in `/admin` and `/admin/approvals` at desktop and narrowed/mobile widths. They confirmed that the staff navigation, cards, headings, and controls remain usable, and that `Tab` produces visible focus movement through staff navigation or controls. No account data was changed during the check.
+
+The user then explicitly confirmed all final interaction checks in their normal browser: reload behavior on `/admin` and `/admin/approvals`, readability of empty Pending/Rejected/Suspended states, a successful non-destructive Cloudinary verification action, and visible keyboard focus through public navigation, staff sidebar navigation, account forms, approval controls, and media controls.
+
+The user explicitly chose to keep the Leadership page in its current verified-content pending state. No leadership names, titles, bios, images, or social links have been invented; the page can be populated later through a dedicated content update when TAP supplies approved profiles.

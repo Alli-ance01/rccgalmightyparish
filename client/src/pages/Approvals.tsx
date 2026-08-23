@@ -2,6 +2,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import { splitStaffByStatus } from "@/lib/staffStatus";
 import { ShieldCheck, UserCog } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -28,16 +29,13 @@ function ApprovalWorkspace() {
   if (loading) return null;
   if (user?.role !== "master_admin") return <section className="mx-auto max-w-2xl py-16"><p className="eyebrow text-[#0b4ab8]">TAP access control</p><h1 className="display mt-4 text-5xl text-[#10213e]">Master Admin only.</h1><p className="mt-5 text-sm leading-7 text-slate-600">Only the Master Admin can review and manage staff access.</p></section>;
 
-  const accounts = managed.data ?? [];
-  const active = accounts.filter(account => account.accountStatus === "active");
-  const rejected = accounts.filter(account => account.accountStatus === "rejected");
-  const suspended = accounts.filter(account => account.accountStatus === "suspended");
+  const accounts = splitStaffByStatus(managed.data ?? []);
   const isMutating = changeRole.isPending || suspend.isPending || reactivate.isPending;
   const renderCard = (account: ManagedStaffAccount) => <ManagedStaffCard key={account.id} account={account} pending={isMutating} onRole={role => changeRole.mutate({ id: account.id, role })} onSuspend={() => suspend.mutate({ id: account.id })} onReactivate={() => reactivate.mutate({ id: account.id })} />;
 
   return <section className="mx-auto max-w-5xl py-6"><p className="eyebrow text-[#0b4ab8]">Master Admin</p><h1 className="display mt-4 text-5xl text-[#10213e]">Staff access control</h1><p className="mt-4 text-sm leading-7 text-slate-600">Review incoming requests, assign roles, suspend access, and restore approved workers when appropriate.</p>
     <section className="mt-10"><p className="eyebrow text-[#0b4ab8]">Pending requests</p><div className="mt-4 grid gap-4">{requests.isLoading ? <LoadingCard /> : !requests.data?.length ? <Empty label="There are no pending staff access requests." /> : requests.data.map(request => <RequestCard key={request.id} request={request} pending={decide.isPending} onDecide={(decision, role, note) => decide.mutate({ id: request.id, decision, role, note })} />)}</div></section>
-    {managed.isLoading ? <section className="mt-12"><LoadingCard /></section> : <><StaffStatusSection title="Active staff" description="Approved staff members who can access their assigned TAP workspace." empty="No active staff accounts are currently available." accounts={active}>{renderCard}</StaffStatusSection><StaffStatusSection title="Rejected requests" description="Requests that were not approved. These accounts cannot access staff tools." empty="No staff access requests have been rejected." accounts={rejected}>{renderCard}</StaffStatusSection><StaffStatusSection title="Suspended staff" description="Previously approved accounts with staff access currently paused." empty="No staff accounts are currently suspended." accounts={suspended}>{renderCard}</StaffStatusSection></>}
+    {managed.isLoading ? <section className="mt-12"><LoadingCard /></section> : <><StaffStatusSection title="Active staff" description="Approved staff members who can access their assigned TAP workspace." empty="No active staff accounts are currently available." accounts={accounts.active}>{renderCard}</StaffStatusSection><StaffStatusSection title="Rejected requests" description="Requests that were not approved. These accounts cannot access staff tools." empty="No staff access requests have been rejected." accounts={accounts.rejected}>{renderCard}</StaffStatusSection><StaffStatusSection title="Suspended staff" description="Previously approved accounts with staff access currently paused." empty="No staff accounts are currently suspended." accounts={accounts.suspended}>{renderCard}</StaffStatusSection></>}
   </section>;
 }
 

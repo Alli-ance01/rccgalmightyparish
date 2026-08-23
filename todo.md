@@ -4,7 +4,7 @@
 - [x] Create a refined blue-and-white design system with editorial typography, responsive tokens, accessibility, and reduced-motion support.
 - [x] Build the public site shell with a sticky TAP navigation bar, the exact CTAs “Plan a Visit” and “Watch Sermon,” footer, and mobile navigation drawer.
 - [x] Build the Home page with the complete service schedule, Ibadan location context, visitor journeys, ministries, sermon and event previews, giving prompt, media preview, and news preview.
-- [ ] Build the About, Visit Us, Contact, Give, and Leadership pages with trustworthy content structures and clear next steps.
+- [x] Build the About, Visit Us, Contact, Give, and Leadership pages with trustworthy content structures and clear next steps.
 - [x] Build public Sermons listing and detail views with YouTube/Vimeo embeds, speaker and series metadata, series/speaker/date filters, search, and sermon-note downloads.
 - [x] Build public Events listing and detail views for upcoming and past church events.
 - [x] Build dedicated ministry pages for Almighty Elders, Almighty Excellent Men, Almighty Good Women, and Almighty YAYA (Youth & Young Adults).
@@ -15,35 +15,35 @@
 - [x] Implement role-based authentication and permissions for member, worker, ministry leader, editor, and admin access.
 - [x] Implement an admin dashboard for staff to create, edit, and delete sermons, events, posts, announcements, gallery/media content, and ministry pages.
 - [x] Add robust loading, empty, error, and unauthorized states across public and admin experiences.
-- [ ] Add server and UI tests covering key public content queries, filters, role protection, and administrative mutations.
-- [ ] Validate desktop and mobile layouts, visual hierarchy, keyboard accessibility, and micro-interactions using browser previews.
+- [x] Add server and UI tests covering key public content queries, filters, role protection, and administrative mutations.
+- [x] Validate desktop and mobile layouts, visual hierarchy, keyboard accessibility, and micro-interactions using browser previews.
 - [x] Prepare deployment documentation for a Vercel frontend and Render backend, with required environment-variable guidance.
 - [x] Push the validated codebase, tests, and documentation to the supplied GitHub repository.
 - [x] Add Visit Us, Contact, and Leadership to the primary and mobile navigation so every public page is directly reachable.
 - [x] Add clear Home-page prompts for giving and the public media gallery.
-- [ ] Replace provisional Contact, Give, and Leadership copy once the parish provides verified contact channels, bank details, and leadership profiles.
+- [x] Retain the Leadership page’s verified-content pending state by user decision; official contact and giving details are already published, while leadership profiles will be added only when TAP supplies them.
 - [x] Add a public media-detail route for individual gallery items and documents.
 - [x] Add in-page data-load failure states and administrative action failure recovery across public and staff content pages.
-- [ ] Expand automated coverage for representative staff mutations and accessible public-page contracts.
-- [ ] Verify keyboard focus visibility and keyboard reachability on public and staff navigation controls.
+- [x] Expand automated coverage for representative staff mutations and accessible public-page contracts.
+- [x] Verify keyboard focus visibility and keyboard reachability on public and staff navigation controls.
 - [x] Verify visible keyboard focus movement through the public announcement strip on the production homepage.
 - [x] Harden the split-origin OAuth initiation flow for Vercel and Render and revalidate the deployment guide.
 - [x] Add retryable in-page error states to remaining data-driven public detail pages and staff views.
 - [x] Add form-level mutation failure summaries with draft preservation and retry guidance across staff editors and delete actions.
-- [ ] Prepare Vercel frontend deployment settings and document the required production environment variables.
-- [ ] Confirm the compatible backend deployment, CORS origin, OAuth callback configuration, database connectivity, and S3 media settings for the Vercel frontend.
-- [ ] Deploy the TAP frontend on Vercel and verify key public and staff routes in production.
-- [ ] Create the Render API web service from the committed `render.yaml` configuration and capture its public URL.
-- [ ] Configure Render production secrets, the final Vercel CORS origin, frontend return URL, and OAuth callback before enabling staff login.
-- [ ] Provide the user with a self-service Render-to-Vercel deployment walkthrough and production verification checklist.
-- [ ] Replace the Manus-bound OAuth and Forge storage dependencies with externally managed production authentication and S3-compatible storage before enabling external staff login or media uploads.
+- [x] Prepare Vercel frontend deployment settings and document the required production environment variables.
+- [x] Confirm the compatible backend deployment, CORS origin, database connectivity, and Cloudinary media settings for the Vercel frontend.
+- [x] Deploy the TAP frontend on Vercel and verify key public and staff routes in production.
+- [x] Create the Render API web service from the committed configuration and capture its public URL.
+- [x] Configure Render production secrets, the final Vercel CORS origin, and frontend API connection before enabling staff login.
+- [x] Provide the user with a self-service Render-to-Vercel deployment walkthrough and production verification checklist.
+- [x] Replace the Manus-bound OAuth and Forge storage dependencies with TAP-managed local authentication and Cloudinary media storage before enabling external staff login or media uploads.
 - [x] Migrate the SQL/Drizzle persistence layer, content repositories, and session-backed user records to MongoDB.
 - [x] Replace SQL-specific migration and Render database instructions with MongoDB Atlas-compatible setup and deployment documentation.
 - [x] Consolidate the deployment documentation into one beginner-friendly MongoDB Atlas, Render, and Vercel launch checklist that lists only required first-launch variables.
 - [x] Remove obsolete OAuth client initialization from the active TAP API session runtime while retaining the healthy API-only Render endpoint.
-- [ ] Record the live Render API URL in the Vercel deployment handoff and guide the frontend connection steps.
-- [ ] Verify the live Vercel public website against the Render API after CORS and web-app origin settings are configured.
-- [ ] Complete the post-launch public-route, contact/giving-content, and browser-console checklist; keep deferred admin login and media upload disabled.
+- [x] Record the live Render API URL in the Vercel deployment handoff and guide the frontend connection steps.
+- [x] Verify the live Vercel public website against the Render API after CORS and web-app origin settings are configured.
+- [x] Complete the post-launch public-route, contact/giving-content, browser-console, staff-login, and Cloudinary validation checklist.
 - [x] Replace the development-only OAuth scaffold with a production staff authentication provider controlled by TAP Church.
 - [x] Replace development media storage with Cloudinary-backed upload, delivery, and media metadata handling.
 - [x] Implement MongoDB-backed email-and-password staff accounts with pending access requests, master-admin approval, rejection, role assignment, and role-based workspace access.
@@ -53,21 +53,22 @@
 - [x] Add regression tests for the route-scroll behavior and the updated public contact/giving/service information.
 - [x] Validate the configured Cloudinary credential set without exposing its values.
 - [x] Commit and push the custom account and Master Admin foundation to GitHub.
-- [ ] Diagnose and fix the production Master Admin setup and sign-in response parsing failure between Vercel and Render.
-- [ ] Capture and resolve the remaining live non-JSON authentication API response after the Render API is awake.
-- [ ] Diagnose the persistent Master Admin setup failure after Vercel is configured with the Render API URL.
-- [ ] Remove the trailing slash from Render `CORS_ORIGIN` and `WEB_APP_URL`, redeploy the latest backend commit, and verify cross-origin headers.
-- [ ] Configure `VITE_API_BASE_URL` in Vercel Production and rebuild the frontend so authentication requests target Render rather than Vercel.
-- [ ] Audit the exact Vercel environment-variable name, value, and Production target because the deployed JavaScript still omits the Render API URL.
-- [ ] Restore MongoDB Atlas connectivity for the Render API by correcting the Atlas database user, network access, and `MONGODB_URI` configuration.
+- [x] Diagnose and fix the production Master Admin setup and sign-in response parsing failure between Vercel and Render.
+- [x] Capture and resolve the live non-JSON authentication response handling after the Render API wakes.
+- [x] Resolve the Master Admin setup and sign-in failure after Vercel is configured with the Render API URL.
+- [x] Correct cross-origin configuration and verify authenticated Vercel-to-Render requests.
+- [x] Configure `VITE_API_BASE_URL` in Vercel Production and rebuild the frontend so authentication requests target Render rather than Vercel.
+- [x] Audit the deployed Vercel API base configuration and confirm the production JavaScript reaches Render.
+- [x] Restore MongoDB Atlas connectivity for the Render API and verify live data-backed public and staff flows.
 - [x] Add public active-announcement display, an announcements archive, and visitor-facing announcement detail routes with optional calls to action.
 - [x] Add announcement scheduling, editing, preview, publication status, and archive controls to the staff workspace.
 - [x] Add explicit staff announcement preview and lifecycle-status indicators for draft, scheduled, active, and expired notices.
 - [x] Add Master Admin account governance for pending requests, approved accounts, role changes, suspension, and safe account-status management.
 - [x] Add profile and account-management controls for registered members and approved staff.
 - [x] Verify the Master Admin workspace keeps pending, active, rejected, and suspended staff records clearly separated in live use.
-- [ ] Explicitly confirm in a signed-in Master Admin browser that Pending, Active, Rejected, and Suspended staff sections render separately on `/admin/approvals`.
-- [ ] Replace the combined “Managed staff” presentation with separate Active, Rejected, and Suspended staff sections, including clear empty states for each status.
+- [x] Explicitly confirm in a signed-in Master Admin browser that Pending, Active, Rejected, and Suspended staff sections render separately on `/admin/approvals`.
+- [x] Replace the combined “Managed staff” presentation with separate Active, Rejected, and Suspended staff sections, including clear empty states for each status.
+- [x] Confirm Vercel has deployed GitHub commit `3ac283b` before rechecking the refined approvals interface in the normal Master Admin browser.
 - [x] Fix the production staff sign-in redirect loop that returns a successfully signed-in Master Admin to the “Go to sign in” page.
 - [x] Confirm the blank black takeover surface is not a live TAP website failure; normal-browser staff sign-in and Administration work after the session fallback release.
 - [x] Add a secure per-tab bearer-session fallback for cross-origin Vercel-to-Render local accounts when browsers reject third-party session cookies.
@@ -78,7 +79,15 @@
 - [x] Complete Cloudinary media upload, safe connection verification, media metadata editing, publish/unpublish actions, and public asset management.
 - [x] Add public search and discovery affordances where content volumes require them, including announcements and media.
 - [x] Add regression coverage for public announcement and media archive search matching.
-- [ ] Add comprehensive content, account-governance, announcement, and media-operation test coverage.
-- [ ] Validate responsive layouts, semantic accessibility, keyboard workflows, error recovery, and current production Vercel–Render–MongoDB–Cloudinary behavior.
+- [x] Add comprehensive content, account-governance, announcement, and media-operation test coverage.
+- [x] Validate responsive layouts, semantic accessibility, keyboard workflows, error recovery, and current production Vercel–Render–MongoDB–Cloudinary behavior.
+- [x] Run and document browser QA across key public routes at desktop and mobile sizes, including announcements, media, sermons, events, news, ministries, and account; validate staff administration and access requests in the normal Master Admin browser.
+- [x] Run and document desktop and mobile QA for `/admin` and `/admin/approvals` in a signed-in Master Admin browser, including loading, empty, and non-destructive action states.
+- [x] Explicitly verify staff loading, empty, and non-destructive action states on `/admin` and `/admin/approvals` at desktop and mobile widths.
+- [x] Explicitly verify keyboard reachability and visible focus for public navigation, staff sidebar, account forms, approval controls, and media actions.
+- [x] Explicitly verify keyboard reachability and visible focus states for public navigation, staff sidebar navigation, account forms, approval controls, and media actions.
+- [x] Add targeted regression coverage for the cross-origin auth fallback, approval-status section behavior, media publish controls, and representative public cover-image rendering.
+- [x] Add a static regression test that protects the shared visible-focus indicator used by keyboard-accessible controls.
+- [x] Add regression coverage for Master Admin staff-status grouping and separated section behavior.
 - [x] Refresh operational documentation for announcements, staff approval, content publishing, media management, and production troubleshooting.
 - [x] Document publishing expectations for sermons, events, news, ministries, announcements, and media, plus the Vercel–Render–MongoDB–Cloudinary troubleshooting flow.

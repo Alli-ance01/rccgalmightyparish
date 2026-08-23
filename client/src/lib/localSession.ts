@@ -14,3 +14,9 @@ export function clearLocalSessionToken() {
   if (typeof window === "undefined") return;
   window.sessionStorage.removeItem(SESSION_TOKEN_KEY);
 }
+
+export function withLocalSessionAuthorization(headersInit?: HeadersInit, sessionToken?: string | null) {
+  const headers = new Headers(headersInit);
+  if (sessionToken) headers.set("Authorization", `Bearer ${sessionToken}`);
+  return headers;
+}
