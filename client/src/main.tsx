@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import { ensureTapApiJsonResponse } from "./lib/apiResponse";
+import { getLocalSessionToken } from "./lib/localSession";
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -28,8 +29,12 @@ const trpcClient = trpc.createClient({
       url: `${apiBaseUrl}/api/trpc`,
       transformer: superjson,
       async fetch(input, init) {
+        const headers = new Headers(init?.headers);
+        const sessionToken = getLocalSessionToken();
+        if (sessionToken) headers.set("Authorization", `Bearer ${sessionToken}`);
         const response = await globalThis.fetch(input, {
           ...(init ?? {}),
+          headers,
           credentials: "include",
         });
         return ensureTapApiJsonResponse(response);

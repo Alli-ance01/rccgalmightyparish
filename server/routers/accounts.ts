@@ -39,8 +39,9 @@ export const accountRouter = router({
     if (input.email !== ENV.initialMasterAdminEmail) throw new TRPCError({ code: "FORBIDDEN", message: "This setup is restricted to the configured Master Admin email." });
     if (await db.getUserByEmail(input.email)) throw new TRPCError({ code: "CONFLICT", message: "An account already exists for this email." });
     const user = await db.createMasterAdmin({ name: input.name, email: input.email, passwordHash: await bcrypt.hash(input.password, 12) });
-    setLocalSession(ctx, await sdk.createLocalSession(user));
-    return user;
+    const sessionToken = await sdk.createLocalSession(user);
+    setLocalSession(ctx, sessionToken);
+    return { user, sessionToken };
   }),
   register: publicProcedure.input(accountInput).mutation(async ({ input }) => {
     if (await db.getUserByEmail(input.email)) throw new TRPCError({ code: "CONFLICT", message: "An account already exists for this email." });
@@ -59,8 +60,9 @@ export const accountRouter = router({
     if (user.accountStatus === "suspended") throw new TRPCError({ code: "FORBIDDEN", message: "This account has been suspended." });
     await db.touchUser(user.id);
     const publicUser = db.toPublicUser(user);
-    setLocalSession(ctx, await sdk.createLocalSession(publicUser));
-    return publicUser;
+    const sessionToken = await sdk.createLocalSession(publicUser);
+    setLocalSession(ctx, sessionToken);
+    return { user: publicUser, sessionToken };
   }),
   profile: router({
     updateName: protectedProcedure.input(z.object({ name: z.string().trim().min(2).max(120) })).mutation(({ ctx, input }) => db.updateAccountName(ctx.user.id, input.name)),

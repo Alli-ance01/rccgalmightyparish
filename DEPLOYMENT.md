@@ -127,3 +127,7 @@ If the browser shows a CORS error, ensure both Render variables, `CORS_ORIGIN` a
 If Render logs say that MongoDB is unavailable, verify that Atlas has an active cluster, a database user, and network access that permits the Render service. Check that `MONGODB_URI` in Render contains the complete Atlas URI and an explicit database name, such as `tap_church`. URL-encode special characters in the database password. Never paste the URI or password into chat or source control.
 
 If **Verify connection** fails in Administration → Media, confirm that all three Cloudinary variables are present in Render and belong to the same Cloudinary account: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`. Restart or redeploy Render after correcting them, then repeat verification from the staff workspace. The verification response is safe to use because it does not reveal the secret.
+
+## 10. Staff sign-in across Vercel and Render
+
+TAP supports a secure server-issued session cookie where a browser accepts the cross-origin cookie. Modern browsers may block a Render cookie when the website runs on a separate Vercel domain, so TAP also keeps the same signed session token in **per-tab session storage** and sends it as an authenticated request header. This fallback is cleared on sign-out and when the browser tab is closed. After the frontend and API deploy this release, every staff member should sign out and sign in once again before opening Administration.

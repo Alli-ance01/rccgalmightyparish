@@ -40,7 +40,7 @@
 - [x] Migrate the SQL/Drizzle persistence layer, content repositories, and session-backed user records to MongoDB.
 - [x] Replace SQL-specific migration and Render database instructions with MongoDB Atlas-compatible setup and deployment documentation.
 - [x] Consolidate the deployment documentation into one beginner-friendly MongoDB Atlas, Render, and Vercel launch checklist that lists only required first-launch variables.
-- [ ] Remove the development-only OAuth startup warning from the public-only Render API runtime and confirm its health endpoint.
+- [x] Remove obsolete OAuth client initialization from the active TAP API session runtime while retaining the healthy API-only Render endpoint.
 - [ ] Record the live Render API URL in the Vercel deployment handoff and guide the frontend connection steps.
 - [ ] Verify the live Vercel public website against the Render API after CORS and web-app origin settings are configured.
 - [ ] Complete the post-launch public-route, contact/giving-content, and browser-console checklist; keep deferred admin login and media upload disabled.
@@ -66,6 +66,8 @@
 - [x] Add Master Admin account governance for pending requests, approved accounts, role changes, suspension, and safe account-status management.
 - [x] Add profile and account-management controls for registered members and approved staff.
 - [ ] Verify the Master Admin workspace keeps pending, active, rejected, and suspended staff records clearly separated in live use.
+- [ ] Fix the production staff sign-in redirect loop that returns a successfully signed-in Master Admin to the “Go to sign in” page.
+- [x] Add a secure per-tab bearer-session fallback for cross-origin Vercel-to-Render local accounts when browsers reject third-party session cookies.
 - [x] Trigger or wait for Vercel to deploy GitHub commit `1075082`, then recheck the `/announcements` route and homepage announcement strip in production.
 - [x] Add a regression test for managed-staff status boundaries and rejected-record UI safety.
 - [x] Complete content-management flows for sermons, events, news, ministries, announcements, and media with public visibility controls and reliable editor feedback.

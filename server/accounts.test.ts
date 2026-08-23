@@ -41,6 +41,18 @@ describe("local TAP account approval workflow", () => {
     await expect(caller.account.signIn({ email: "worker@tapchurch.org", password: "secure-password" })).rejects.toMatchObject({ code: "FORBIDDEN", message: expect.stringContaining("awaiting") });
   });
 
+  it("returns a session token with a successful local sign-in for cross-origin browser requests", async () => {
+    const context = contextFor("admin");
+    const caller = appRouter.createCaller(context);
+    dbMock.getUserByEmail.mockResolvedValue({ ...context.user, email: "admin@tapchurch.org", passwordHash: await bcrypt.hash("secure-password", 12) });
+
+    await expect(caller.account.signIn({ email: "admin@tapchurch.org", password: "secure-password" })).resolves.toMatchObject({
+      user: expect.objectContaining({ role: "admin", email: "admin@tapchurch.org" }),
+      sessionToken: "local-session",
+    });
+    expect(sdkMock.sdk.createLocalSession).toHaveBeenCalledWith(expect.objectContaining({ email: "admin@tapchurch.org" }));
+  });
+
   it("limits staff governance actions to the Master Admin", async () => {
     const id = "507f1f77bcf86cd799439012";
     const master = appRouter.createCaller(contextFor("master_admin"));

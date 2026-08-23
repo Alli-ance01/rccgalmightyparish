@@ -15,3 +15,5 @@ The in-page cross-origin fetch to the Render announcement procedure returned HTT
 The production homepage was also rechecked and rendered the site-wide `Announcement` strip plus the **From the church office** section containing the active announcement. Both required public announcement surfaces are therefore live against the current Vercel deployment and Render data source.
 
 Keyboard navigation was checked on the production homepage. The first two `Tab` presses moved visibly between the announcement title and announcement call-to-action, showing clear focus treatment and a logical sequence for the new global announcement controls.
+
+The local API was restarted after replacing the active SDK with a local-session-only implementation. The fresh startup log reached `Server running` without the former OAuth initialization output. The remaining local MongoDB notices are expected because sandbox development does not include the user’s Render `MONGODB_URI` secret.
