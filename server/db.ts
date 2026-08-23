@@ -144,6 +144,18 @@ export async function createMasterAdmin(input: { name: string; email: string; pa
   return toPublicUser(serialize<User>(created));
 }
 export async function touchUser(id: string) { await requireDb(); await collection("users").updateOne({ _id: asId(id) }, { $set: { lastSignedIn: new Date(), updatedAt: new Date() } }); }
+export async function updateAccountName(id: string, name: string) {
+  await requireDb();
+  const result = await collection("users").findOneAndUpdate({ _id: asId(id) }, { $set: { name: name.trim(), updatedAt: new Date() } }, { returnDocument: "after" });
+  if (!result) throw new Error("Account not found");
+  return toPublicUser(serialize<User>(result));
+}
+export async function updateAccountPassword(id: string, passwordHash: string) {
+  await requireDb();
+  const result = await collection("users").findOneAndUpdate({ _id: asId(id) }, { $set: { passwordHash, updatedAt: new Date() } }, { returnDocument: "after" });
+  if (!result) throw new Error("Account not found");
+  return toPublicUser(serialize<User>(result));
+}
 export async function listAccessRequests(status: AccountStatus = "pending"): Promise<PublicUser[]> {
   const db = await getDb(); if (!db) return [];
   const records = await collection("users").find({ accountType: "staff", accountStatus: status }).sort({ createdAt: -1 }).toArray();
@@ -163,6 +175,26 @@ export async function suspendAccount(id: string, approverId: string) {
   await requireDb();
   const result = await collection("users").findOneAndUpdate({ _id: asId(id), role: { $ne: "master_admin" } }, { $set: { accountStatus: "suspended", suspendedAt: new Date(), approvedBy: approverId, updatedAt: new Date() } }, { returnDocument: "after" });
   if (!result) throw new Error("Account not found or protected");
+  return toPublicUser(serialize<User>(result));
+}
+export function managedStaffFilter(status?: AccountStatus): Filter<Document> {
+  return { accountType: "staff", role: { $ne: "master_admin" }, ...(status ? { accountStatus: status } : { accountStatus: { $in: ["active", "rejected", "suspended"] } }) };
+}
+export async function listManagedStaff(status?: AccountStatus): Promise<PublicUser[]> {
+  const db = await getDb(); if (!db) return [];
+  const query = managedStaffFilter(status);
+  return (await collection("users").find(query).sort({ updatedAt: -1 }).toArray()).map(record => toPublicUser(serialize<User>(record)));
+}
+export async function changeStaffRole(id: string, role: Exclude<UserRole, "master_admin">, approverId: string) {
+  await requireDb();
+  const result = await collection("users").findOneAndUpdate({ _id: asId(id), accountType: "staff", role: { $ne: "master_admin" }, accountStatus: "active" }, { $set: { role, approvedBy: approverId, updatedAt: new Date() } }, { returnDocument: "after" });
+  if (!result) throw new Error("Active staff account not found or protected");
+  return toPublicUser(serialize<User>(result));
+}
+export async function reactivateStaff(id: string, approverId: string) {
+  await requireDb();
+  const result = await collection("users").findOneAndUpdate({ _id: asId(id), accountType: "staff", role: { $ne: "master_admin" }, accountStatus: "suspended" }, { $set: { accountStatus: "active", suspendedAt: null, approvedBy: approverId, updatedAt: new Date() } }, { returnDocument: "after" });
+  if (!result) throw new Error("Suspended staff account not found or protected");
   return toPublicUser(serialize<User>(result));
 }
 
@@ -188,7 +220,25 @@ export async function getPostBySlug(slug: string, includeUnpublished = false): P
 export const savePost = (values: NewPost, id?: string) => saveRecord("posts", values, id);
 export const deletePost = (id: string) => deleteRecord("posts", id);
 
-export async function listAnnouncements(includeInactive = false): Promise<Announcement[]> { const db = await getDb(); if (!db) return []; return (await collection("announcements").find(includeInactive ? {} : { isActive: true }).sort({ createdAt: -1 }).toArray()).map(serialize<Announcement>); }
+export function activeAnnouncementFilter(now = new Date()): Filter<Document> {
+  return {
+    isActive: true,
+    $and: [
+      { $or: [{ startsAt: null }, { startsAt: { $exists: false } }, { startsAt: { $lte: now } }] },
+      { $or: [{ endsAt: null }, { endsAt: { $exists: false } }, { endsAt: { $gte: now } }] },
+    ],
+  };
+}
+export async function listAnnouncements(includeInactive = false): Promise<Announcement[]> {
+  const db = await getDb(); if (!db) return [];
+  const query: Filter<Document> = includeInactive ? {} : activeAnnouncementFilter();
+  return (await collection("announcements").find(query).sort({ createdAt: -1 }).toArray()).map(serialize<Announcement>);
+}
+export async function getAnnouncementById(id: string, includeInactive = false): Promise<Announcement | undefined> {
+  const db = await getDb(); if (!db || !ObjectId.isValid(id)) return undefined;
+  const record = await collection("announcements").findOne(includeInactive ? { _id: asId(id) } : { _id: asId(id), ...activeAnnouncementFilter() });
+  return record ? serialize<Announcement>(record) : undefined;
+}
 export const saveAnnouncement = (values: NewAnnouncement, id?: string) => saveRecord("announcements", values, id);
 export const deleteAnnouncement = (id: string) => deleteRecord("announcements", id);
 

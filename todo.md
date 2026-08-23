@@ -53,3 +53,23 @@
 - [ ] Validate the configured Cloudinary credential set without exposing its values.
 - [x] Commit and push the custom account and Master Admin foundation to GitHub.
 - [ ] Diagnose and fix the production Master Admin setup and sign-in response parsing failure between Vercel and Render.
+- [ ] Capture and resolve the remaining live non-JSON authentication API response after the Render API is awake.
+- [ ] Diagnose the persistent Master Admin setup failure after Vercel is configured with the Render API URL.
+- [ ] Remove the trailing slash from Render `CORS_ORIGIN` and `WEB_APP_URL`, redeploy the latest backend commit, and verify cross-origin headers.
+- [ ] Configure `VITE_API_BASE_URL` in Vercel Production and rebuild the frontend so authentication requests target Render rather than Vercel.
+- [ ] Audit the exact Vercel environment-variable name, value, and Production target because the deployed JavaScript still omits the Render API URL.
+- [ ] Restore MongoDB Atlas connectivity for the Render API by correcting the Atlas database user, network access, and `MONGODB_URI` configuration.
+- [x] Add public active-announcement display, an announcements archive, and visitor-facing announcement detail routes with optional calls to action.
+- [x] Add announcement scheduling, editing, preview, publication status, and archive controls to the staff workspace.
+- [x] Add explicit staff announcement preview and lifecycle-status indicators for draft, scheduled, active, and expired notices.
+- [x] Add Master Admin account governance for pending requests, approved accounts, role changes, suspension, and safe account-status management.
+- [x] Add profile and account-management controls for registered members and approved staff.
+- [ ] Verify the Master Admin workspace keeps pending, active, rejected, and suspended staff records clearly separated in live use.
+- [x] Add a regression test for managed-staff status boundaries and rejected-record UI safety.
+- [ ] Complete content-management flows for sermons, events, news, ministries, announcements, and media with public visibility controls and reliable editor feedback.
+- [x] Complete Cloudinary media upload, safe connection verification, media metadata editing, publish/unpublish actions, and public asset management.
+- [ ] Add public search and discovery affordances where content volumes require them, including announcements and media.
+- [ ] Add comprehensive content, account-governance, announcement, and media-operation test coverage.
+- [ ] Validate responsive layouts, semantic accessibility, keyboard workflows, error recovery, and current production Vercel–Render–MongoDB–Cloudinary behavior.
+- [x] Refresh operational documentation for announcements, staff approval, content publishing, media management, and production troubleshooting.
+- [x] Document publishing expectations for sermons, events, news, ministries, announcements, and media, plus the Vercel–Render–MongoDB–Cloudinary troubleshooting flow.

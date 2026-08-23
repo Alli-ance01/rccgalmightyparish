@@ -4,6 +4,8 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import About from "./pages/About";
 import Account from "./pages/Account";
+import AnnouncementDetail from "./pages/AnnouncementDetail";
+import Announcements from "./pages/Announcements";
 import Admin from "./pages/Admin";
 import Approvals from "./pages/Approvals";
 import Contact from "./pages/Contact";
@@ -54,6 +56,8 @@ function Router() {
     <Route path="/media/:id" component={MediaDetail} />
     <Route path="/news" component={News} />
     <Route path="/news/:slug" component={PostDetail} />
+    <Route path="/announcements" component={Announcements} />
+    <Route path="/announcements/:id" component={AnnouncementDetail} />
     <Route path="/sign-in" component={SignIn} />
     <Route path="/account" component={Account} />
     <Route path="/master-setup" component={MasterSetup} />

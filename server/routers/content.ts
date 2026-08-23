@@ -136,6 +136,7 @@ export const contentRouter = router({
   }),
   announcements: router({
     list: publicProcedure.query(() => db.listAnnouncements()),
+    byId: publicProcedure.input(z.object({ id: mongoId })).query(({ input }) => db.getAnnouncementById(input.id)),
     save: editorProcedure.input(z.object({ id: mongoId.optional(), values: announcementInput })).mutation(({ input }) =>
       db.saveAnnouncement({
         ...input.values,
@@ -201,6 +202,11 @@ export const contentRouter = router({
       const current = (await db.listMedia(true)).find(media => media.id === input.id);
       if (!current) throw new TRPCError({ code: "NOT_FOUND", message: "Media item not found." });
       return db.saveMedia({ ...current, isPublished: input.isPublished }, input.id);
+    }),
+    updateMetadata: editorProcedure.input(z.object({ id: mongoId, title: z.string().trim().min(3).max(255), altText: z.string().trim().max(255).optional().nullable(), isPublished: z.boolean() })).mutation(async ({ input }) => {
+      const current = (await db.listMedia(true)).find(media => media.id === input.id);
+      if (!current) throw new TRPCError({ code: "NOT_FOUND", message: "Media item not found." });
+      return db.saveMedia({ ...current, title: input.title, altText: blankToNull(input.altText), isPublished: input.isPublished }, input.id);
     }),
     delete: editorProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteMedia(input.id)),
   }),

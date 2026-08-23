@@ -62,9 +62,19 @@ export const accountRouter = router({
     setLocalSession(ctx, await sdk.createLocalSession(publicUser));
     return publicUser;
   }),
+  profile: router({
+    updateName: protectedProcedure.input(z.object({ name: z.string().trim().min(2).max(120) })).mutation(({ ctx, input }) => db.updateAccountName(ctx.user.id, input.name)),
+    changePassword: protectedProcedure.input(z.object({ currentPassword: z.string().min(1), newPassword: password })).mutation(async ({ ctx, input }) => {
+      if (!(await bcrypt.compare(input.currentPassword, ctx.user.passwordHash))) throw new TRPCError({ code: "UNAUTHORIZED", message: "Your current password is incorrect." });
+      return db.updateAccountPassword(ctx.user.id, await bcrypt.hash(input.newPassword, 12));
+    }),
+  }),
   requests: router({
     list: masterProcedure.query(() => db.listAccessRequests()),
     decide: masterProcedure.input(z.object({ id: z.string().regex(/^[a-f\d]{24}$/i), decision: z.enum(["approve", "reject"]), role: z.enum(staffRoles).optional(), note: z.string().trim().max(500).optional() })).mutation(({ ctx, input }) => db.decideStaffRequest({ ...input, approverId: ctx.user.id })),
     suspend: masterProcedure.input(z.object({ id: z.string().regex(/^[a-f\d]{24}$/i) })).mutation(({ ctx, input }) => db.suspendAccount(input.id, ctx.user.id)),
+    managed: masterProcedure.input(z.object({ status: z.enum(["active", "rejected", "suspended"]).optional() }).optional()).query(({ input }) => db.listManagedStaff(input?.status)),
+    changeRole: masterProcedure.input(z.object({ id: z.string().regex(/^[a-f\d]{24}$/i), role: z.enum(staffRoles) })).mutation(({ ctx, input }) => db.changeStaffRole(input.id, input.role, ctx.user.id)),
+    reactivate: masterProcedure.input(z.object({ id: z.string().regex(/^[a-f\d]{24}$/i) })).mutation(({ ctx, input }) => db.reactivateStaff(input.id, ctx.user.id)),
   }),
 });

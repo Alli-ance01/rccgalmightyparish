@@ -1,7 +1,8 @@
-import { Menu, Play, X } from "lucide-react";
+import { Bell, Menu, Play, X } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { navigation } from "@/data/site";
+import { trpc } from "@/lib/trpc";
 
 const utilities = [
   { label: "Visit Us", href: "/visit" },
@@ -27,11 +28,14 @@ export function TapMark({ inverse = false }: { inverse?: boolean }) {
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
+  const announcements = trpc.content.announcements.list.useQuery();
+  const notice = announcements.data?.[0];
 
   const isActive = (href: string) => href === "/" ? location === "/" : location.startsWith(href);
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-[#f7f9fc]/90 backdrop-blur-xl">
+      {notice && <div className="border-b border-blue-100 bg-[#eaf2ff] text-[#0b4ab8]"><div className="container flex min-h-10 items-center gap-2 py-2 text-xs font-bold"><Bell className="h-3.5 w-3.5 shrink-0" /><Link href={`/announcements/${notice.id}`} className="min-w-0 truncate hover:underline">{notice.title}</Link>{notice.actionLabel && notice.actionUrl && <a href={notice.actionUrl} className="ml-auto shrink-0 rounded-full border border-blue-200 bg-white px-2.5 py-1 text-[0.65rem] font-extrabold hover:bg-blue-50">{notice.actionLabel}</a>}</div></div>}
       <div className="container flex h-[4.75rem] items-center justify-between gap-4">
         <Link href="/" onClick={() => setOpen(false)}><TapMark /></Link>
         <nav className="hidden items-center gap-5 lg:flex" aria-label="Primary navigation">

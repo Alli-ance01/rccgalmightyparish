@@ -16,6 +16,7 @@ const dbMock = vi.hoisted(() => ({
   savePost: vi.fn(),
   deletePost: vi.fn(),
   listAnnouncements: vi.fn(),
+  getAnnouncementById: vi.fn(),
   saveAnnouncement: vi.fn(),
   deleteAnnouncement: vi.fn(),
   listMinistryPages: vi.fn(),
@@ -157,5 +158,36 @@ describe("TAP content router", () => {
       title: "Sunday Worship",
     });
     expect(dbMock.getMediaById).toHaveBeenCalledWith(id);
+  });
+
+  it("allows editors to update media labels and public visibility without changing the stored file", async () => {
+    const caller = appRouter.createCaller(contextFor("editor"));
+    const id = "507f1f77bcf86cd799439015";
+    const media = { id, title: "Sunday Worship", altText: "Congregation in worship", mediaType: "image", storageKey: "tap/sunday", url: "https://res.cloudinary.com/example/image/upload/tap/sunday.jpg", mimeType: "image/jpeg", isPublished: false, createdBy: "507f1f77bcf86cd799439011" };
+    dbMock.listMedia.mockResolvedValue([media]);
+    dbMock.saveMedia.mockResolvedValue(id);
+
+    await expect(caller.content.media.updateMetadata({ id, title: "Sunday worship gathering", altText: "The congregation during Sunday worship", isPublished: true })).resolves.toBe(id);
+    expect(dbMock.saveMedia).toHaveBeenCalledWith(expect.objectContaining({
+      id,
+      storageKey: "tap/sunday",
+      url: media.url,
+      title: "Sunday worship gathering",
+      altText: "The congregation during Sunday worship",
+      isPublished: true,
+    }), id);
+  });
+
+  it("provides active announcements through public list and detail contracts", async () => {
+    const caller = appRouter.createCaller(contextFor("member"));
+    const id = "507f1f77bcf86cd799439014";
+    const announcement = { id, title: "Prayer meeting venue", body: "This week we meet at the church auditorium.", isActive: true };
+    dbMock.listAnnouncements.mockResolvedValue([announcement]);
+    dbMock.getAnnouncementById.mockResolvedValue(announcement);
+
+    await expect(caller.content.announcements.list()).resolves.toEqual([announcement]);
+    await expect(caller.content.announcements.byId({ id })).resolves.toEqual(announcement);
+    expect(dbMock.listAnnouncements).toHaveBeenCalledWith();
+    expect(dbMock.getAnnouncementById).toHaveBeenCalledWith(id);
   });
 });

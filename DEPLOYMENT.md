@@ -103,3 +103,27 @@ For Cloudinary, an approved Editor, Admin, or Master Admin can open **Administra
 Confirm that the Vercel site opens Home, Visit Us, Contact, Give, Ministries, Sermons, Events, Media, Junior Church, Sign in, and Master Admin setup. Verify the contact details, OPay giving information, Sunday timings, and route-scroll reset. Open the browser console and confirm there are no CORS errors.
 
 When a custom domain is added in Vercel, update both `CORS_ORIGIN` and `WEB_APP_URL` in Render to the final domain and redeploy the API.
+
+## 8. Day-to-day content and access operations
+
+The Master Admin uses **Administration → Access requests** to review every incoming staff application. Pending requests are separate from managed staff records. Approved staff can receive the Worker, Ministry Leader, Editor, or Admin role; their role can be changed later, while staff access can be suspended and restored. Rejected applications are retained as a record and do not expose role or suspension controls. The Master Admin account itself is protected from these actions.
+
+Members and approved staff can use **Account** to update their displayed name and change their own password. A password change requires the existing password and a new password of at least 10 characters.
+
+For announcements, an Editor, Admin, or Master Admin goes to **Administration → Announcements**, writes the notice, reviews the live visitor preview, and selects its active window. The workspace identifies each announcement as **Draft**, **Scheduled**, **Active**, or **Expired**. Only active notices within their configured time window display in the site-wide notice strip, the Home page, and the public `/announcements` archive. Active notices also offer an **Open public view** link in the staff list.
+
+For media, an Editor, Admin, or Master Admin goes to **Administration → Media**, verifies Cloudinary once, and uploads an image, video, or document of no more than 18 MB. Each item can remain unpublished until it is ready. Existing media records can be reopened to adjust their title, accessible alt text, and publication state without changing the stored Cloudinary asset. Do not move Cloudinary credentials out of Render.
+
+For sermons, events, news, and ministry pages, staff should begin each record as a draft, review all required fields and links, then select **Publish on the public website** only when it is ready. Published sermons, events, news, ministries, and media appear on their relevant public listings; unpublished records remain visible only in Administration. Events require an accurate location and start time. Sermons need a speaker, series, and suitable video or note link when one exists. News entries should include a clear category, author, excerpt, and full body. Ministry pages should only list leaders, meeting details, and images that TAP has confirmed for publication.
+
+## 9. Production troubleshooting
+
+If the Vercel website reports that the TAP API returned an unexpected response, wait briefly and retry once: a free Render service can be waking from an idle cold start. If the problem persists, open the Render service logs and confirm that the latest GitHub `main` deployment completed successfully.
+
+If authentication requests return a Vercel `405` or never reach Render, check **Vercel → Settings → Environment Variables**. The variable name must be exactly `VITE_API_BASE_URL`, its value must be the full Render API URL such as `https://rccg-tap-api.onrender.com`, it must be assigned to **Production**, and Vercel must be redeployed afterwards. Do not use `VITE_API_UR` or add a path such as `/api/trpc` to this value.
+
+If the browser shows a CORS error, ensure both Render variables, `CORS_ORIGIN` and `WEB_APP_URL`, are exactly the Vercel origin with **no trailing slash**, for example `https://rccgalmightyparish.vercel.app`. Save the values and manually deploy the latest Render commit. Repeat this step whenever the public domain changes.
+
+If Render logs say that MongoDB is unavailable, verify that Atlas has an active cluster, a database user, and network access that permits the Render service. Check that `MONGODB_URI` in Render contains the complete Atlas URI and an explicit database name, such as `tap_church`. URL-encode special characters in the database password. Never paste the URI or password into chat or source control.
+
+If **Verify connection** fails in Administration → Media, confirm that all three Cloudinary variables are present in Render and belong to the same Cloudinary account: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`. Restart or redeploy Render after correcting them, then repeat verification from the staff workspace. The verification response is safe to use because it does not reveal the secret.

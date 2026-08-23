@@ -4,7 +4,7 @@ import type { TrpcContext } from "./_core/context";
 
 const dbMock = vi.hoisted(() => ({
   hasMasterAdmin: vi.fn(), getUserByEmail: vi.fn(), createAccount: vi.fn(), createMasterAdmin: vi.fn(), touchUser: vi.fn(),
-  listAccessRequests: vi.fn(), decideStaffRequest: vi.fn(), suspendAccount: vi.fn(), toPublicUser: vi.fn((user: Record<string, unknown>) => user),
+  listAccessRequests: vi.fn(), decideStaffRequest: vi.fn(), suspendAccount: vi.fn(), listManagedStaff: vi.fn(), changeStaffRole: vi.fn(), reactivateStaff: vi.fn(), updateAccountName: vi.fn(), updateAccountPassword: vi.fn(), toPublicUser: vi.fn((user: Record<string, unknown>) => user),
 }));
 const sdkMock = vi.hoisted(() => ({ sdk: { createLocalSession: vi.fn().mockResolvedValue("local-session") } }));
 vi.mock("./db", () => dbMock);
@@ -39,5 +39,39 @@ describe("local TAP account approval workflow", () => {
     const caller = appRouter.createCaller(contextFor("member"));
     dbMock.getUserByEmail.mockResolvedValue({ ...contextFor("member").user, passwordHash: await bcrypt.hash("secure-password", 12), accountStatus: "pending" });
     await expect(caller.account.signIn({ email: "worker@tapchurch.org", password: "secure-password" })).rejects.toMatchObject({ code: "FORBIDDEN", message: expect.stringContaining("awaiting") });
+  });
+
+  it("limits staff governance actions to the Master Admin", async () => {
+    const id = "507f1f77bcf86cd799439012";
+    const master = appRouter.createCaller(contextFor("master_admin"));
+    dbMock.listManagedStaff.mockResolvedValue([{ id, accountStatus: "active", role: "worker" }]);
+    dbMock.changeStaffRole.mockResolvedValue({ id, accountStatus: "active", role: "editor" });
+    dbMock.suspendAccount.mockResolvedValue({ id, accountStatus: "suspended" });
+    dbMock.reactivateStaff.mockResolvedValue({ id, accountStatus: "active" });
+
+    await expect(master.account.requests.managed()).resolves.toHaveLength(1);
+    await expect(master.account.requests.changeRole({ id, role: "editor" })).resolves.toMatchObject({ role: "editor" });
+    await expect(master.account.requests.suspend({ id })).resolves.toMatchObject({ accountStatus: "suspended" });
+    await expect(master.account.requests.reactivate({ id })).resolves.toMatchObject({ accountStatus: "active" });
+    expect(dbMock.changeStaffRole).toHaveBeenCalledWith(id, "editor", "507f1f77bcf86cd799439011");
+    expect(dbMock.reactivateStaff).toHaveBeenCalledWith(id, "507f1f77bcf86cd799439011");
+
+    const admin = appRouter.createCaller(contextFor("admin"));
+    await expect(admin.account.requests.changeRole({ id, role: "editor" })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(admin.account.requests.reactivate({ id })).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("lets signed-in users update only their own profile after confirming their current password", async () => {
+    const context = contextFor("member");
+    context.user.passwordHash = await bcrypt.hash("current-password", 12);
+    const caller = appRouter.createCaller(context);
+    dbMock.updateAccountName.mockResolvedValue({ id: context.user.id, name: "Updated TAP Member" });
+    dbMock.updateAccountPassword.mockResolvedValue({ id: context.user.id });
+
+    await expect(caller.account.profile.updateName({ name: "Updated TAP Member" })).resolves.toMatchObject({ name: "Updated TAP Member" });
+    await expect(caller.account.profile.changePassword({ currentPassword: "current-password", newPassword: "new-secure-password" })).resolves.toMatchObject({ id: context.user.id });
+    expect(dbMock.updateAccountName).toHaveBeenCalledWith(context.user.id, "Updated TAP Member");
+    expect(dbMock.updateAccountPassword).toHaveBeenCalledWith(context.user.id, expect.any(String));
+    await expect(caller.account.profile.changePassword({ currentPassword: "wrong-password", newPassword: "another-secure-password" })).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
 });
