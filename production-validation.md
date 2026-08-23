@@ -17,3 +17,15 @@ The production homepage was also rechecked and rendered the site-wide `Announcem
 Keyboard navigation was checked on the production homepage. The first two `Tab` presses moved visibly between the announcement title and announcement call-to-action, showing clear focus treatment and a logical sequence for the new global announcement controls.
 
 The local API was restarted after replacing the active SDK with a local-session-only implementation. The fresh startup log reached `Server running` without the former OAuth initialization output. The remaining local MongoDB notices are expected because sandbox development does not include the user’s Render `MONGODB_URI` secret.
+
+## Staff session validation follow-up
+
+After the cross-origin session repair was pushed, the user reported reaching the live Admin page. A browser reload check from the automation session initially displayed the dashboard skeleton and then returned to the public `Sign in to continue` gate. The next diagnostic step is to inspect the Vercel tab’s per-tab session-storage token and the authenticated `auth.me` response without exposing its value.
+
+The live Vercel JavaScript bundle was confirmed to contain the `tap-local-session-token` fallback. In the automation tab, no session token is currently stored and `auth.me` returns `null`, so that tab has not retained a fresh post-deployment login. This does not expose any credential value; a sign-in within the same browser tab is required to complete the live validation.
+
+The public production `/sign-in` route was opened directly in the automation browser after the black-screen report. It rendered the full TAP sign-in form, navigation, and footer rather than a blank screen. The black-screen symptom may therefore be limited to the user takeover surface or a specific post-login navigation state; the next check is the live browser console and authenticated navigation state after a same-tab sign-in.
+
+The user subsequently confirmed that staff sign-in and Administration work in their normal browser. The blank black takeover surface is therefore not a live TAP production rendering failure. Production staff authentication is considered validated through the normal browser session; the automation takeover surface remains unsuitable for authenticated session testing.
+
+The user then confirmed from the normal Master Admin browser session that the Administration workflow works and **Cloudinary Verify connection** was accepted. This validates the Render-side Cloudinary credentials without exposing them. The user also confirmed the requested access-management view was working after opening it from the Admin session.

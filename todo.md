@@ -51,7 +51,7 @@
 - [x] Publish the supplied official parish phone, email, full church address, OPay giving details, and Sunday service times while retaining clearly labelled provisional content where information is unavailable.
 - [x] Add route-change scroll restoration so internal navigation begins at the top of the destination page.
 - [x] Add regression tests for the route-scroll behavior and the updated public contact/giving/service information.
-- [ ] Validate the configured Cloudinary credential set without exposing its values.
+- [x] Validate the configured Cloudinary credential set without exposing its values.
 - [x] Commit and push the custom account and Master Admin foundation to GitHub.
 - [ ] Diagnose and fix the production Master Admin setup and sign-in response parsing failure between Vercel and Render.
 - [ ] Capture and resolve the remaining live non-JSON authentication API response after the Render API is awake.
@@ -65,8 +65,11 @@
 - [x] Add explicit staff announcement preview and lifecycle-status indicators for draft, scheduled, active, and expired notices.
 - [x] Add Master Admin account governance for pending requests, approved accounts, role changes, suspension, and safe account-status management.
 - [x] Add profile and account-management controls for registered members and approved staff.
-- [ ] Verify the Master Admin workspace keeps pending, active, rejected, and suspended staff records clearly separated in live use.
-- [ ] Fix the production staff sign-in redirect loop that returns a successfully signed-in Master Admin to the “Go to sign in” page.
+- [x] Verify the Master Admin workspace keeps pending, active, rejected, and suspended staff records clearly separated in live use.
+- [ ] Explicitly confirm in a signed-in Master Admin browser that Pending, Active, Rejected, and Suspended staff sections render separately on `/admin/approvals`.
+- [ ] Replace the combined “Managed staff” presentation with separate Active, Rejected, and Suspended staff sections, including clear empty states for each status.
+- [x] Fix the production staff sign-in redirect loop that returns a successfully signed-in Master Admin to the “Go to sign in” page.
+- [x] Confirm the blank black takeover surface is not a live TAP website failure; normal-browser staff sign-in and Administration work after the session fallback release.
 - [x] Add a secure per-tab bearer-session fallback for cross-origin Vercel-to-Render local accounts when browsers reject third-party session cookies.
 - [x] Trigger or wait for Vercel to deploy GitHub commit `1075082`, then recheck the `/announcements` route and homepage announcement strip in production.
 - [x] Add a regression test for managed-staff status boundaries and rejected-record UI safety.
