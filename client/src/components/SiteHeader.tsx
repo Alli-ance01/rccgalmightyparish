@@ -17,7 +17,7 @@ const utilities = [
 export function TapMark({ inverse = false }: { inverse?: boolean }) {
   return (
     <div className="flex items-center gap-2.5" aria-label="RCCG, The Almighty Parish">
-      <span className={`grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full border ${inverse ? "border-white/40 bg-white" : "border-blue-100 bg-white"}`}><img src="/manus-storage/rccg-tap-emblem-web_0b0ab086.png" alt="" className="h-full w-full scale-[1.18] object-contain" /></span>
+      <span className={`grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full border ${inverse ? "border-white/40 bg-white" : "border-blue-100 bg-white"}`}><img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663804076298/hIMtHTrGgFsxuoBl.png" alt="" className="h-full w-full scale-[1.18] object-contain" /></span>
       <span className={`leading-none ${inverse ? "text-white" : "text-[#10213e]"}`}>
         <strong className="block text-[0.69rem] font-extrabold tracking-[0.08em]">RCCG, THE ALMIGHTY PARISH</strong>
         <small className={`block pt-1 text-[0.58rem] font-bold tracking-[0.12em] ${inverse ? "text-blue-100" : "text-slate-500"}`}>RCCG TAP</small>

@@ -1,5 +1,9 @@
 # Project TODO
 
+- [x] Repair the broken live RCCG emblem asset reference in shared header, footer, and staff branding.
+- [x] Add a dynamic homepage Upcoming Events section for published future events, with a clear path to the complete events calendar.
+- [x] Add regression coverage for homepage future-event filtering, weekly-service fallback, and calendar navigation.
+
 - [x] Replace “TAP Church” / “The Almighty Parish Church” naming with “RCCG, The Almighty Parish” and use “RCCG TAP” only as the abbreviation.
 - [x] Refine the supplied RCCG emblem for crisp website use and apply it consistently as the temporary parish logo.
 - [x] Add direct visitor destinations for announcements, account access, staff sign-in, and remove unconfirmed social placeholders that led nowhere.
