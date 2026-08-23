@@ -122,7 +122,7 @@ describe("TAP content router", () => {
         startsAt,
         endsAt: null,
         registrationUrl: "",
-        coverImageUrl: "",
+        coverImageUrl: "https://res.cloudinary.com/tap/image/upload/tap/events/worship-night.jpg",
         isPublished: true,
       },
     })).resolves.toBe("507f1f77bcf86cd799439012");
@@ -131,6 +131,7 @@ describe("TAP content router", () => {
       title: "TAP Worship Night",
       slug: "tap-worship-night",
       startsAt,
+      coverImageUrl: "https://res.cloudinary.com/tap/image/upload/tap/events/worship-night.jpg",
       isPublished: true,
     }), undefined);
   });

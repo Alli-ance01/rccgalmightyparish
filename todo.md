@@ -26,6 +26,7 @@
 - [x] Add in-page data-load failure states and administrative action failure recovery across public and staff content pages.
 - [ ] Expand automated coverage for representative staff mutations and accessible public-page contracts.
 - [ ] Verify keyboard focus visibility and keyboard reachability on public and staff navigation controls.
+- [x] Verify visible keyboard focus movement through the public announcement strip on the production homepage.
 - [x] Harden the split-origin OAuth initiation flow for Vercel and Render and revalidate the deployment guide.
 - [x] Add retryable in-page error states to remaining data-driven public detail pages and staff views.
 - [x] Add form-level mutation failure summaries with draft preservation and retry guidance across staff editors and delete actions.
@@ -65,9 +66,10 @@
 - [x] Add Master Admin account governance for pending requests, approved accounts, role changes, suspension, and safe account-status management.
 - [x] Add profile and account-management controls for registered members and approved staff.
 - [ ] Verify the Master Admin workspace keeps pending, active, rejected, and suspended staff records clearly separated in live use.
-- [ ] Trigger or wait for Vercel to deploy GitHub commit `1075082`, then recheck the `/announcements` route and homepage announcement strip in production.
+- [x] Trigger or wait for Vercel to deploy GitHub commit `1075082`, then recheck the `/announcements` route and homepage announcement strip in production.
 - [x] Add a regression test for managed-staff status boundaries and rejected-record UI safety.
-- [ ] Complete content-management flows for sermons, events, news, ministries, announcements, and media with public visibility controls and reliable editor feedback.
+- [x] Complete content-management flows for sermons, events, news, ministries, announcements, and media with public visibility controls and reliable editor feedback.
+- [x] Add cover and hero image URL controls to sermon, event, news, and ministry editors so staff can connect approved Cloudinary assets to public content cards and details.
 - [x] Complete Cloudinary media upload, safe connection verification, media metadata editing, publish/unpublish actions, and public asset management.
 - [x] Add public search and discovery affordances where content volumes require them, including announcements and media.
 - [x] Add regression coverage for public announcement and media archive search matching.

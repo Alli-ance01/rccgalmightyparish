@@ -7,3 +7,11 @@ The Vercel production homepage at `https://rccgalmightyparish.vercel.app` was re
 The live route then displayed a blank loading state on one subsequent refresh, so the post-redeploy validation must include a browser-console/network check for the configured `VITE_API_BASE_URL` and a Render API response.
 
 The Render health endpoint at `https://rccg-tap-api.onrender.com/` returned `{"service":"TAP Church API","status":"ok"}`. The public `content.announcements.list` procedure also returned the currently active announcement from MongoDB. This indicates the existing Render service is healthy and serving announcement data; the missing public archive is a Vercel frontend deployment gap rather than an API availability issue.
+
+After the subsequent GitHub push, Vercel began serving the `/announcements` route. Its rendered page remained on the `Loading announcements…` state rather than displaying the active announcement, despite the Render public procedure returning data when opened directly. The browser console contained no client-side error, so the next check is an in-page cross-origin request to confirm the deployed frontend’s API base URL and CORS behavior.
+
+The in-page cross-origin fetch to the Render announcement procedure returned HTTP 200 with JSON data. On the subsequent page check, the `/announcements` archive displayed the active announcement and the site-wide header strip. This confirms that the deployed Vercel application and configured Render API origin work together; the earlier loading display resolved after the asynchronous query completed.
+
+The production homepage was also rechecked and rendered the site-wide `Announcement` strip plus the **From the church office** section containing the active announcement. Both required public announcement surfaces are therefore live against the current Vercel deployment and Render data source.
+
+Keyboard navigation was checked on the production homepage. The first two `Tab` presses moved visibly between the announcement title and announcement call-to-action, showing clear focus treatment and a logical sequence for the new global announcement controls.
