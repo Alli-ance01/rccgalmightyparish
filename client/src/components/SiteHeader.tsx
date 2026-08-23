@@ -5,21 +5,22 @@ import { navigation } from "@/data/site";
 import { trpc } from "@/lib/trpc";
 
 const utilities = [
-  { label: "Visit Us", href: "/visit" },
   { label: "Contact", href: "/contact" },
   { label: "Leadership", href: "/leadership" },
   { label: "Junior Church", href: "/junior-church" },
   { label: "Media", href: "/media" },
   { label: "News", href: "/news" },
+  { label: "Announcements", href: "/announcements" },
+  { label: "Account", href: "/account" },
 ];
 
 export function TapMark({ inverse = false }: { inverse?: boolean }) {
   return (
-    <div className="flex items-center gap-2.5" aria-label="TAP Church">
-      <span className={`grid h-9 w-9 place-items-center rounded-full border text-xs font-black tracking-[-0.08em] ${inverse ? "border-white/40 bg-white/10 text-white" : "border-blue-100 bg-blue-50 text-[#0b4ab8]"}`}>TAP</span>
+    <div className="flex items-center gap-2.5" aria-label="RCCG, The Almighty Parish">
+      <span className={`grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full border ${inverse ? "border-white/40 bg-white" : "border-blue-100 bg-white"}`}><img src="/manus-storage/rccg-tap-emblem-web_0b0ab086.png" alt="" className="h-full w-full scale-[1.18] object-contain" /></span>
       <span className={`leading-none ${inverse ? "text-white" : "text-[#10213e]"}`}>
-        <strong className="block text-[0.77rem] font-extrabold tracking-[0.12em]">TAP CHURCH</strong>
-        <small className={`block pt-1 text-[0.58rem] font-bold tracking-[0.12em] ${inverse ? "text-blue-100" : "text-slate-500"}`}>RCCG THE ALMIGHTY PARISH</small>
+        <strong className="block text-[0.69rem] font-extrabold tracking-[0.08em]">RCCG, THE ALMIGHTY PARISH</strong>
+        <small className={`block pt-1 text-[0.58rem] font-bold tracking-[0.12em] ${inverse ? "text-blue-100" : "text-slate-500"}`}>RCCG TAP</small>
       </span>
     </div>
   );

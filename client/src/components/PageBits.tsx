@@ -6,7 +6,7 @@ export function SectionHeading({ eyebrow, title, copy, action }: { eyebrow: stri
   return <div className="grid gap-5 md:grid-cols-[0.9fr_1.5fr_auto] md:items-end"><div><p className="eyebrow text-[#0b4ab8]">{eyebrow}</p></div><div><h2 className="display text-4xl leading-[0.96] text-[#10213e] sm:text-5xl">{title}</h2>{copy && <p className="mt-4 max-w-xl text-sm leading-7 text-slate-600">{copy}</p>}</div>{action && <Link href={action.href} className="tap-button inline-flex w-fit items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-xs font-extrabold text-[#10213e] hover:border-[#0b4ab8] hover:text-[#0b4ab8]">{action.label}<ArrowUpRight className="h-3.5 w-3.5" /></Link>}</div>;
 }
 
-export function PageHero({ eyebrow, title, copy, label = "TAP Church", extra }: { eyebrow: string; title: string; copy: string; label?: string; extra?: React.ReactNode }) {
+export function PageHero({ eyebrow, title, copy, label = "RCCG TAP", extra }: { eyebrow: string; title: string; copy: string; label?: string; extra?: React.ReactNode }) {
   return <section className="mesh grid-noise overflow-hidden text-white"><div className="container relative py-20 sm:py-28"><div className="absolute right-[-3rem] top-[-2.5rem] h-48 w-48 rounded-full border border-white/20 bg-white/5 sm:h-72 sm:w-72" /><div className="relative max-w-3xl"><p className="eyebrow text-[#d7ff54]">{eyebrow}</p><h1 className="display mt-5 text-5xl leading-[0.94] sm:text-7xl">{title}</h1><p className="mt-6 max-w-2xl text-base leading-7 text-blue-100 sm:text-lg">{copy}</p>{extra && <div className="mt-8">{extra}</div>}<p className="mt-12 text-[0.68rem] font-extrabold tracking-[0.16em] text-blue-200">{label}</p></div></div></section>;
 }
 

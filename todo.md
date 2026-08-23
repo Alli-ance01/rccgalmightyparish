@@ -1,5 +1,12 @@
 # Project TODO
 
+- [x] Replace “TAP Church” / “The Almighty Parish Church” naming with “RCCG, The Almighty Parish” and use “RCCG TAP” only as the abbreviation.
+- [x] Refine the supplied RCCG emblem for crisp website use and apply it consistently as the temporary parish logo.
+- [x] Add direct visitor destinations for announcements, account access, staff sign-in, and remove unconfirmed social placeholders that led nowhere.
+- [x] Add a tested shared terminology guard so legacy public copy renders as RCCG, The Almighty Parish or RCCG TAP rather than “TAP Church.”
+- [x] Audit and repair public and staff routes so navigation has clear, intentional destinations without redundant page-to-page loops.
+- [x] Add route-registration and shared-navigation regression checks for direct visitor, account, announcement, and staff sign-in destinations.
+
 - [x] Establish the TAP content model, navigation taxonomy, authentication roles, and S3 media strategy.
 - [x] Create a refined blue-and-white design system with editorial typography, responsive tokens, accessibility, and reduced-motion support.
 - [x] Build the public site shell with a sticky TAP navigation bar, the exact CTAs “Plan a Visit” and “Watch Sermon,” footer, and mobile navigation drawer.

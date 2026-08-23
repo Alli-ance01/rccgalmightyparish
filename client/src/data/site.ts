@@ -1,6 +1,6 @@
 export const site = {
-  name: "RCCG The Almighty Parish",
-  shortName: "TAP",
+  name: "RCCG, The Almighty Parish",
+  shortName: "RCCG TAP",
   city: "Ibadan, Nigeria",
   address: "RCCG Almighty Parish, Beside NNPC Filling Station, Ebenezery, off IyanaChurch/Alakia Axis, Ibadan, Oyo State, Nigeria",
   email: "ogundereoluwatimileyin@gmail.com",

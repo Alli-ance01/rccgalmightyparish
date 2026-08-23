@@ -173,8 +173,9 @@ function DashboardLayoutContent({
               </button>
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
+                  <img src="/manus-storage/rccg-tap-emblem-web_0b0ab086.png" alt="" className="h-7 w-7 rounded-full border border-slate-200 bg-white object-contain" />
                   <span className="font-semibold tracking-tight truncate">
-                    TAP Staff
+                    RCCG TAP Staff
                   </span>
                 </div>
               ) : null}

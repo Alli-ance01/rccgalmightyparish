@@ -1,14 +1,14 @@
-import { ArrowUpRight, Instagram, MapPin, Youtube } from "lucide-react";
+import { ArrowUpRight, MapPin } from "lucide-react";
 import { Link } from "wouter";
 import { site } from "@/data/site";
 import { TapMark } from "./SiteHeader";
 
 const footerLinks = [
-  { label: "About TAP", href: "/about" },
+  { label: "About RCCG TAP", href: "/about" },
   { label: "Visit us", href: "/visit" },
   { label: "Contact", href: "/contact" },
   { label: "Give", href: "/give" },
-  { label: "Administration", href: "/admin" },
+  { label: "Staff sign in", href: "/sign-in" },
 ];
 
 export default function SiteFooter() {
@@ -25,10 +25,10 @@ export default function SiteFooter() {
           <div className="mt-5 grid gap-3">{footerLinks.map(item => <Link key={item.href} href={item.href} className="text-sm font-bold text-blue-50 transition-colors hover:text-[#d7ff54]">{item.label}</Link>)}</div>
         </div>
         <div>
-          <p className="eyebrow text-[#d7ff54]">Find TAP</p>
+          <p className="eyebrow text-[#d7ff54]">Find RCCG TAP</p>
           <p className="mt-5 flex items-start gap-2 text-sm leading-6 text-blue-50"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#d7ff54]" />{site.city}</p>
           <p className="mt-3 text-sm leading-6 text-blue-200">Specific campus directions and contact channels will be shared by the church office.</p>
-          <div className="mt-6 flex gap-3"><a href="#" aria-label="TAP Church on YouTube" className="grid h-9 w-9 place-items-center rounded-full border border-white/20 text-white hover:bg-white hover:text-[#081f50]"><Youtube className="h-4 w-4" /></a><a href="#" aria-label="TAP Church on Instagram" className="grid h-9 w-9 place-items-center rounded-full border border-white/20 text-white hover:bg-white hover:text-[#081f50]"><Instagram className="h-4 w-4" /></a></div>
+          <p className="mt-6 text-xs leading-5 text-blue-200">Official YouTube and Instagram links will be added when the parish confirms them.</p>
         </div>
       </div>
       <div className="border-t border-white/10"><div className="container flex flex-col justify-between gap-2 py-5 text-[0.68rem] font-bold tracking-wide text-blue-300 sm:flex-row"><span>© {new Date().getFullYear()} {site.name}</span><span>Built as a digital home for Ibadan.</span></div></div>
