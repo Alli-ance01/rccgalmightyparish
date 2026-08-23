@@ -38,6 +38,12 @@ function RouteScrollReset() {
   return null;
 }
 
+function LegacyAccountRedirect() {
+  const [, setLocation] = useLocation();
+  useEffect(() => { setLocation("/sign-in"); }, [setLocation]);
+  return <div className="grid min-h-screen place-items-center bg-slate-50 text-sm font-bold text-slate-600">Taking you to sign in…</div>;
+}
+
 function Router() {
   return <Switch>
     <Route path="/" component={Home} />
@@ -60,6 +66,7 @@ function Router() {
     <Route path="/announcements" component={Announcements} />
     <Route path="/announcements/:id" component={AnnouncementDetail} />
     <Route path="/sign-in" component={SignIn} />
+    <Route path="/account" component={LegacyAccountRedirect} />
     <Route path="/member" component={MemberDashboard} />
     <Route path="/master-setup" component={MasterSetup} />
     <Route path="/admin" component={Admin} />

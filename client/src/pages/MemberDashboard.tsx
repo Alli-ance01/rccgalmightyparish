@@ -7,10 +7,12 @@ import { toast } from "sonner";
 import { Link, useLocation } from "wouter";
 
 export default function MemberDashboard() {
-  const { user, loading, logout } = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/sign-in" });
+  const { user, loading, error, refresh, logout } = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/sign-in" });
   const [, setLocation] = useLocation();
   useEffect(() => { if (user && user.role !== "member") setLocation("/admin"); }, [setLocation, user]);
-  if (loading || !user) return <div className="grid min-h-screen place-items-center bg-slate-50"><Loader2 className="h-6 w-6 animate-spin text-[#0b4ab8]" /></div>;
+  if (loading) return <div className="grid min-h-screen place-items-center bg-slate-50"><div className="grid justify-items-center gap-4 text-center"><Loader2 className="h-6 w-6 animate-spin text-[#0b4ab8]" /><p className="text-sm font-bold text-slate-600">Opening your member dashboard…</p></div></div>;
+  if (error) return <main className="grid min-h-screen place-items-center bg-slate-50 px-5"><section className="max-w-md rounded-[1.5rem] border border-slate-200 bg-white p-8 text-center shadow-sm"><p className="eyebrow text-[#0b4ab8]">Member dashboard</p><h1 className="mt-4 text-2xl font-extrabold text-[#10213e]">We could not open your dashboard.</h1><p className="mt-3 text-sm leading-6 text-slate-600">{error.message || "Please check your connection and try again."}</p><div className="mt-6 flex flex-wrap justify-center gap-3"><Button onClick={() => void refresh()} className="rounded-xl bg-[#0b4ab8]">Retry dashboard</Button><Link href="/sign-in" className="inline-flex h-10 items-center rounded-xl border border-slate-200 px-4 text-sm font-extrabold text-[#10213e]">Sign in</Link></div></section></main>;
+  if (!user) return null;
   if (user.role !== "member") return null;
   return <MemberWorkspace user={user} logout={logout} />;
 }

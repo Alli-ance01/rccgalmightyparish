@@ -8,7 +8,7 @@ const footerLinks = [
   { label: "Visit us", href: "/visit" },
   { label: "Contact", href: "/contact" },
   { label: "Give", href: "/give" },
-  { label: "Staff sign in", href: "/sign-in" },
+  { label: "Sign in", href: "/sign-in" },
 ];
 
 export default function SiteFooter() {

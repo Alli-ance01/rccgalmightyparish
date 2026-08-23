@@ -9,6 +9,8 @@ describe("member dashboard routing", () => {
     expect(signIn).toContain('user.user.role === "member" ? "/member" : "/admin"');
     expect(page).toContain('redirectPath: "/sign-in"');
     expect(page).toContain('if (user && user.role !== "member") setLocation("/admin")');
+    expect(page).toContain("Retry dashboard");
+    expect(page).toContain("We could not open your dashboard.");
     expect(page).toContain("Member dashboard");
   });
 });

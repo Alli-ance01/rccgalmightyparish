@@ -1,5 +1,6 @@
 # Project TODO
 
+- [x] Diagnose and fix site unresponsiveness reported after opening the retired account panel, including reliable unauthenticated and member-dashboard loading states.
 - [x] Replace the public Account page with one shared Sign in route that sends members to a member dashboard and approved staff to the staff workspace.
 - [x] Remove Account links and `/account` route usage from public navigation, footer, and authentication redirects.
 - [x] Add regression coverage for the shared sign-in role split, private member dashboard, and removal of the legacy `/account` route.

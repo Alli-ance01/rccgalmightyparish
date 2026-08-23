@@ -4,7 +4,7 @@ import { httpBatchLink } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
-import { ensureTapApiJsonResponse } from "./lib/apiResponse";
+import { fetchTapApi } from "./lib/apiResponse";
 import { getLocalSessionToken, withLocalSessionAuthorization } from "./lib/localSession";
 import "./index.css";
 
@@ -30,12 +30,11 @@ const trpcClient = trpc.createClient({
       transformer: superjson,
       async fetch(input, init) {
         const headers = withLocalSessionAuthorization(init?.headers, getLocalSessionToken());
-        const response = await globalThis.fetch(input, {
+        return fetchTapApi(input, {
           ...(init ?? {}),
           headers,
           credentials: "include",
         });
-        return ensureTapApiJsonResponse(response);
       },
     }),
   ],
