@@ -65,10 +65,12 @@
 - [x] Add Master Admin account governance for pending requests, approved accounts, role changes, suspension, and safe account-status management.
 - [x] Add profile and account-management controls for registered members and approved staff.
 - [ ] Verify the Master Admin workspace keeps pending, active, rejected, and suspended staff records clearly separated in live use.
+- [ ] Trigger or wait for Vercel to deploy GitHub commit `1075082`, then recheck the `/announcements` route and homepage announcement strip in production.
 - [x] Add a regression test for managed-staff status boundaries and rejected-record UI safety.
 - [ ] Complete content-management flows for sermons, events, news, ministries, announcements, and media with public visibility controls and reliable editor feedback.
 - [x] Complete Cloudinary media upload, safe connection verification, media metadata editing, publish/unpublish actions, and public asset management.
-- [ ] Add public search and discovery affordances where content volumes require them, including announcements and media.
+- [x] Add public search and discovery affordances where content volumes require them, including announcements and media.
+- [x] Add regression coverage for public announcement and media archive search matching.
 - [ ] Add comprehensive content, account-governance, announcement, and media-operation test coverage.
 - [ ] Validate responsive layouts, semantic accessibility, keyboard workflows, error recovery, and current production Vercel–Render–MongoDB–Cloudinary behavior.
 - [x] Refresh operational documentation for announcements, staff approval, content publishing, media management, and production troubleshooting.
