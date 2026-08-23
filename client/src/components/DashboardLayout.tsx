@@ -20,7 +20,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/useMobile";
-import { CalendarDays, Images, LayoutDashboard, LogOut, Megaphone, Newspaper, PanelLeft, ShieldCheck, Users, Video } from "lucide-react";
+import { CalendarDays, HandHeart, Images, LayoutDashboard, LogOut, Megaphone, Newspaper, PanelLeft, ShieldCheck, Users, Video } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -35,6 +35,7 @@ const menuItems = [
   { icon: Megaphone, label: "Announcements", path: "/admin?tab=announcements" },
   { icon: Images, label: "Media", path: "/admin?tab=media" },
   { icon: ShieldCheck, label: "Access requests", path: "/admin/approvals" },
+  { icon: HandHeart, label: "Prayer requests", path: "/admin/prayer-requests" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";

@@ -103,9 +103,23 @@ export type MediaAsset = Entity & {
   createdBy: string | null;
 };
 
+export const PRAYER_REQUEST_STATUSES = ["new", "prayed", "closed"] as const;
+export type PrayerRequestStatus = (typeof PRAYER_REQUEST_STATUSES)[number];
+
+export type PrayerRequest = Entity & {
+  name: string | null;
+  email: string | null;
+  request: string;
+  wantsFollowUp: boolean;
+  status: PrayerRequestStatus;
+  reviewedBy: string | null;
+  reviewedAt: Date | null;
+};
+
 export type NewSermon = Omit<Sermon, keyof Entity>;
 export type NewEvent = Omit<Event, keyof Entity>;
 export type NewPost = Omit<Post, keyof Entity>;
 export type NewAnnouncement = Omit<Announcement, keyof Entity>;
 export type NewMinistryPage = Omit<MinistryPage, keyof Entity>;
 export type NewMediaAsset = Omit<MediaAsset, keyof Entity>;
+export type NewPrayerRequest = Omit<PrayerRequest, keyof Entity>;

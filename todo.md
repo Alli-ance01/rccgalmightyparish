@@ -1,5 +1,11 @@
 # Project TODO
 
+- [x] Add an editor-managed Cloudinary upload flow for event cover images and display those covers in upcoming-event cards and event details.
+- [x] Add a privacy-conscious homepage prayer-request form with MongoDB persistence and a protected staff review workspace.
+- [x] Add regression coverage for public prayer submission and administrator-only prayer-request review.
+- [x] Add regression coverage for staff event-cover upload controls and retryable account-route recovery.
+- [x] Add a clearly labelled Account destination in public navigation and replace the indefinite `/account` loading state with retryable recovery guidance.
+
 - [x] Repair the broken live RCCG emblem asset reference in shared header, footer, and staff branding.
 - [x] Add a dynamic homepage Upcoming Events section for published future events, with a clear path to the complete events calendar.
 - [x] Add regression coverage for homepage future-event filtering, weekly-service fallback, and calendar navigation.

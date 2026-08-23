@@ -8,6 +8,7 @@ const footerLinks = [
   { label: "Visit us", href: "/visit" },
   { label: "Contact", href: "/contact" },
   { label: "Give", href: "/give" },
+  { label: "My account", href: "/account" },
   { label: "Staff sign in", href: "/sign-in" },
 ];
 

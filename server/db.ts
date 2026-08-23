@@ -10,10 +10,13 @@ import type {
   NewMediaAsset,
   NewMinistryPage,
   NewPost,
+  NewPrayerRequest,
   NewSermon,
   Post,
   PublicUser,
   Sermon,
+  PrayerRequest,
+  PrayerRequestStatus,
   User,
   UserRole,
 } from "./models";
@@ -52,6 +55,7 @@ async function ensureIndexes(db: Db) {
     db.collection("events").createIndex({ slug: 1 }, { unique: true }),
     db.collection("posts").createIndex({ slug: 1 }, { unique: true }),
     db.collection("ministryPages").createIndex({ slug: 1 }, { unique: true }),
+    db.collection("prayerRequests").createIndex({ status: 1, createdAt: -1 }),
   ]);
 }
 
@@ -251,5 +255,17 @@ export async function listMedia(includeUnpublished = false): Promise<MediaAsset[
 export async function getMediaById(id: string, includeUnpublished = false): Promise<MediaAsset | undefined> { const db = await getDb(); if (!db || !ObjectId.isValid(id)) return undefined; const record = await collection("mediaAssets").findOne(includeUnpublished ? { _id: new ObjectId(id) } : { _id: new ObjectId(id), isPublished: true }); return record ? serialize<MediaAsset>(record) : undefined; }
 export const saveMedia = (values: NewMediaAsset, id?: string) => saveRecord("mediaAssets", values, id);
 export const deleteMedia = (id: string) => deleteRecord("mediaAssets", id);
+
+export async function createPrayerRequest(values: NewPrayerRequest) { return saveRecord("prayerRequests", values); }
+export async function listPrayerRequests(status?: PrayerRequestStatus): Promise<PrayerRequest[]> {
+  const db = await getDb(); if (!db) return [];
+  return (await collection("prayerRequests").find(status ? { status } : {}).sort({ createdAt: -1 }).toArray()).map(serialize<PrayerRequest>);
+}
+export async function updatePrayerRequestStatus(id: string, status: PrayerRequestStatus, reviewerId: string) {
+  await requireDb();
+  const result = await collection("prayerRequests").findOneAndUpdate({ _id: asId(id) }, { $set: { status, reviewedBy: reviewerId, reviewedAt: new Date(), updatedAt: new Date() } }, { returnDocument: "after" });
+  if (!result) throw new Error("Prayer request not found");
+  return serialize<PrayerRequest>(result);
+}
 
 export async function getContentCounts() { const db = await getDb(); if (!db) return { sermons: 0, events: 0, posts: 0, media: 0, ministries: 0 }; const [sermons, events, posts, media, ministries] = await Promise.all(["sermons", "events", "posts", "mediaAssets", "ministryPages"].map(name => collection(name).countDocuments())); return { sermons, events, posts, media, ministries }; }

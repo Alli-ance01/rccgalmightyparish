@@ -29,8 +29,10 @@ const dbMock = vi.hoisted(() => ({
   deleteMedia: vi.fn(),
   getContentCounts: vi.fn(),
 }));
+const cloudinaryMock = vi.hoisted(() => ({ uploadToCloudinary: vi.fn(), cloudinaryConfigurationStatus: vi.fn(), verifyCloudinaryConfiguration: vi.fn() }));
 
 vi.mock("./db", () => dbMock);
+vi.mock("./cloudinary", () => cloudinaryMock);
 
 function contextFor(role: "member" | "worker" | "ministry_leader" | "editor" | "admin" | "master_admin"): TrpcContext {
   return {
@@ -65,6 +67,7 @@ describe("TAP content router", () => {
     dbMock.saveEvent.mockResolvedValue("507f1f77bcf86cd799439012");
     dbMock.getMediaById.mockResolvedValue(undefined);
     dbMock.getContentCounts.mockResolvedValue({ sermons: 2, events: 1, posts: 3, media: 4, ministries: 5 });
+    cloudinaryMock.uploadToCloudinary.mockResolvedValue({ secureUrl: "https://res.cloudinary.com/tap/image/upload/tap/event-cover.jpg", publicId: "tap/event-cover", mimeType: "image/jpeg" });
   });
 
   it("passes sermon search and archive filters to the public query layer", async () => {
@@ -134,6 +137,13 @@ describe("TAP content router", () => {
       coverImageUrl: "https://res.cloudinary.com/tap/image/upload/tap/events/worship-night.jpg",
       isPublished: true,
     }), undefined);
+  });
+
+  it("allows editors, but not members, to upload a Cloudinary event cover", async () => {
+    const input = { filename: "worship-night.jpg", mimeType: "image/jpeg", dataUrl: "data:image/jpeg;base64,cover" };
+    await expect(appRouter.createCaller(contextFor("member")).content.events.uploadCover(input)).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(appRouter.createCaller(contextFor("editor")).content.events.uploadCover(input)).resolves.toEqual({ url: "https://res.cloudinary.com/tap/image/upload/tap/event-cover.jpg", storageKey: "tap/event-cover" });
+    expect(cloudinaryMock.uploadToCloudinary).toHaveBeenCalledWith(expect.objectContaining({ mediaType: "image", filename: "event-cover-worship-night.jpg" }));
   });
 
   it("allows approved staff to retrieve content dashboard counts", async () => {

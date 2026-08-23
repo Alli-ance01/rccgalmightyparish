@@ -125,6 +125,15 @@ export const contentRouter = router({
       }, input.id),
     ),
     delete: editorProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteEvent(input.id)),
+    uploadCover: editorProcedure.input(z.object({ filename: z.string().trim().min(1).max(255), mimeType: z.string().trim().regex(/^image\//, "Choose an image file."), dataUrl: z.string().min(20).max(25 * 1024 * 1024, "Choose an image smaller than 18 MB.") })).mutation(async ({ ctx, input }) => {
+      if (!input.dataUrl.includes(",")) throw new TRPCError({ code: "BAD_REQUEST", message: "The selected cover could not be read." });
+      try {
+        const uploaded = await uploadToCloudinary({ dataUrl: input.dataUrl, mediaType: "image", filename: `event-cover-${sanitizeFilename(input.filename)}`, contentType: input.mimeType, uploaderId: ctx.user.id });
+        return { url: uploaded.secureUrl, storageKey: uploaded.publicId };
+      } catch (error) {
+        throw new TRPCError({ code: "PRECONDITION_FAILED", message: error instanceof Error ? error.message : "Event cover upload failed." });
+      }
+    }),
   }),
   posts: router({
     list: publicProcedure.input(z.object({ category: z.string().optional() }).optional()).query(({ input }) => db.listPosts(input?.category)),

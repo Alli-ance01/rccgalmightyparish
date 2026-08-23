@@ -23,6 +23,7 @@ import MinistryDetail from "./pages/MinistryDetail";
 import News from "./pages/News";
 import NotFound from "./pages/NotFound";
 import PostDetail from "./pages/PostDetail";
+import PrayerRequests from "./pages/PrayerRequests";
 import SermonDetail from "./pages/SermonDetail";
 import Sermons from "./pages/Sermons";
 import SignIn from "./pages/SignIn";
@@ -63,6 +64,7 @@ function Router() {
     <Route path="/master-setup" component={MasterSetup} />
     <Route path="/admin" component={Admin} />
     <Route path="/admin/approvals" component={Approvals} />
+    <Route path="/admin/prayer-requests" component={PrayerRequests} />
     <Route component={NotFound} />
   </Switch>;
 }
