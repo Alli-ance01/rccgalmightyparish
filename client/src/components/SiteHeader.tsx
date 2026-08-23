@@ -11,7 +11,6 @@ const utilities = [
   { label: "Media", href: "/media" },
   { label: "News", href: "/news" },
   { label: "Announcements", href: "/announcements" },
-  { label: "Account", href: "/account" },
 ];
 
 export function TapMark({ inverse = false }: { inverse?: boolean }) {

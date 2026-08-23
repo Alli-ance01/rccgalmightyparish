@@ -1,5 +1,9 @@
 # Project TODO
 
+- [x] Replace the public Account page with one shared Sign in route that sends members to a member dashboard and approved staff to the staff workspace.
+- [x] Remove Account links and `/account` route usage from public navigation, footer, and authentication redirects.
+- [x] Add regression coverage for the shared sign-in role split, private member dashboard, and removal of the legacy `/account` route.
+
 - [x] Add an editor-managed Cloudinary upload flow for event cover images and display those covers in upcoming-event cards and event details.
 - [x] Add a privacy-conscious homepage prayer-request form with MongoDB persistence and a protected staff review workspace.
 - [x] Add regression coverage for public prayer submission and administrator-only prayer-request review.

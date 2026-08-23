@@ -17,7 +17,7 @@ export default function SignIn() {
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const status = trpc.account.setupStatus.useQuery();
-  const signIn = trpc.account.signIn.useMutation({ onSuccess: async user => { storeLocalSessionToken(user.sessionToken); await utils.auth.me.invalidate(); toast.success(`Welcome back, ${user.user.name}.`); setLocation(user.user.role === "member" ? "/account" : "/admin"); } });
+  const signIn = trpc.account.signIn.useMutation({ onSuccess: async user => { storeLocalSessionToken(user.sessionToken); await utils.auth.me.invalidate(); toast.success(`Welcome back, ${user.user.name}.`); setLocation(user.user.role === "member" ? "/member" : "/admin"); } });
   const register = trpc.account.register.useMutation({ onSuccess: result => { toast.success(result.message); setMode("sign-in"); } });
 
   const submitSignIn = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); const values = new FormData(event.currentTarget); signIn.mutate({ email: String(values.get("email")), password: String(values.get("password")) }); };

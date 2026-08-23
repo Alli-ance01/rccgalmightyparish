@@ -3,7 +3,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import About from "./pages/About";
-import Account from "./pages/Account";
 import AnnouncementDetail from "./pages/AnnouncementDetail";
 import Announcements from "./pages/Announcements";
 import Admin from "./pages/Admin";
@@ -17,6 +16,7 @@ import JuniorChurch from "./pages/JuniorChurch";
 import Leadership from "./pages/Leadership";
 import Media from "./pages/Media";
 import MediaDetail from "./pages/MediaDetail";
+import MemberDashboard from "./pages/MemberDashboard";
 import MasterSetup from "./pages/MasterSetup";
 import Ministries from "./pages/Ministries";
 import MinistryDetail from "./pages/MinistryDetail";
@@ -60,7 +60,7 @@ function Router() {
     <Route path="/announcements" component={Announcements} />
     <Route path="/announcements/:id" component={AnnouncementDetail} />
     <Route path="/sign-in" component={SignIn} />
-    <Route path="/account" component={Account} />
+    <Route path="/member" component={MemberDashboard} />
     <Route path="/master-setup" component={MasterSetup} />
     <Route path="/admin" component={Admin} />
     <Route path="/admin/approvals" component={Approvals} />
