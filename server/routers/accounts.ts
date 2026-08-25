@@ -7,10 +7,30 @@ import { ENV } from "../_core/env";
 import { sdk } from "../_core/sdk";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { JUNIOR_AGE_CATEGORIES, MEMBER_UPDATE_AUDIENCES, MINISTRY_INTERESTS, SERVICE_AVAILABILITY } from "../models";
 
 const staffRoles = ["worker", "ministry_leader", "editor", "admin"] as const;
 const email = z.string().trim().toLowerCase().email().max(320);
 const password = z.string().min(10, "Use at least 10 characters for your password.").max(128);
+const memberProfileInput = z.object({
+  ministryInterests: z.array(z.enum(MINISTRY_INTERESTS)).max(MINISTRY_INTERESTS.length),
+  serviceAvailability: z.enum(SERVICE_AVAILABILITY).nullable(),
+  wantsParishUpdates: z.boolean(),
+  isGuardian: z.boolean(),
+  juniorAgeCategories: z.array(z.enum(JUNIOR_AGE_CATEGORIES)).max(JUNIOR_AGE_CATEGORIES.length),
+}).superRefine((value, context) => {
+  if (!value.isGuardian && value.juniorAgeCategories.length) context.addIssue({ code: "custom", path: ["juniorAgeCategories"], message: "Only a parent or guardian can select Junior Church categories." });
+});
+const memberUpdateInput = z.object({
+  title: z.string().trim().min(3).max(140),
+  body: z.string().trim().min(10).max(2500),
+  audience: z.enum(MEMBER_UPDATE_AUDIENCES),
+  audienceValues: z.array(z.string().trim().min(1).max(80)).max(10),
+  isPublished: z.boolean(),
+}).superRefine((value, context) => {
+  if (value.audience === "all" && value.audienceValues.length) context.addIssue({ code: "custom", path: ["audienceValues"], message: "A parish-wide update cannot have segment values." });
+  if (value.audience !== "all" && !value.audienceValues.length) context.addIssue({ code: "custom", path: ["audienceValues"], message: "Choose at least one audience value." });
+});
 const accountInput = z.object({
   name: z.string().trim().min(2).max(120),
   email,
@@ -18,12 +38,17 @@ const accountInput = z.object({
   accountType: z.enum(["member", "staff"]),
   requestedRole: z.enum(staffRoles).optional(),
   requestNote: z.string().trim().max(500).optional(),
+  onboarding: memberProfileInput.optional(),
 });
 
 const masterProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "master_admin") {
     throw new TRPCError({ code: "FORBIDDEN", message: "Master Admin access is required." });
   }
+  return next();
+});
+const memberReviewProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.user.role !== "admin" && ctx.user.role !== "master_admin") throw new TRPCError({ code: "FORBIDDEN", message: "Administrator access is required." });
   return next();
 });
 
@@ -50,6 +75,7 @@ export const accountRouter = router({
       name: input.name, email: input.email, passwordHash: await bcrypt.hash(input.password, 12), accountType: input.accountType,
       requestedRole: input.accountType === "staff" ? input.requestedRole : undefined, requestNote: input.requestNote,
     });
+    if (input.accountType === "member" && input.onboarding) await db.saveMemberProfile({ ...input.onboarding, userId: account.id, onboardingCompleted: true });
     return { account, message: input.accountType === "staff" ? "Your staff access request is awaiting Master Admin approval." : "Your member account is ready. You can now sign in." };
   }),
   signIn: publicProcedure.input(z.object({ email, password: z.string().min(1) })).mutation(async ({ ctx, input }) => {
@@ -65,11 +91,23 @@ export const accountRouter = router({
     return { user: publicUser, sessionToken };
   }),
   profile: router({
+    get: protectedProcedure.query(({ ctx }) => db.getMemberProfile(ctx.user.id)),
+    savePreferences: protectedProcedure.input(memberProfileInput).mutation(({ ctx, input }) => db.saveMemberProfile({ ...input, userId: ctx.user.id, onboardingCompleted: true })),
     updateName: protectedProcedure.input(z.object({ name: z.string().trim().min(2).max(120) })).mutation(({ ctx, input }) => db.updateAccountName(ctx.user.id, input.name)),
     changePassword: protectedProcedure.input(z.object({ currentPassword: z.string().min(1), newPassword: password })).mutation(async ({ ctx, input }) => {
       if (!(await bcrypt.compare(input.currentPassword, ctx.user.passwordHash))) throw new TRPCError({ code: "UNAUTHORIZED", message: "Your current password is incorrect." });
       return db.updateAccountPassword(ctx.user.id, await bcrypt.hash(input.newPassword, 12));
     }),
+  }),
+  memberHub: router({
+    eventInterestIds: protectedProcedure.query(({ ctx }) => db.listEventInterestIds(ctx.user.id)),
+    setEventInterest: protectedProcedure.input(z.object({ eventId: z.string().regex(/^[a-f\d]{24}$/i), interested: z.boolean() })).mutation(({ ctx, input }) => db.setEventInterest({ ...input, userId: ctx.user.id })),
+    updates: protectedProcedure.query(({ ctx }) => db.listMemberUpdatesForUser(ctx.user.id)),
+  }),
+  memberManagement: router({
+    listProfiles: memberReviewProcedure.query(() => db.listMemberProfilesForStaff()),
+    listUpdates: memberReviewProcedure.query(() => db.listMemberUpdatesForStaff()),
+    createUpdate: memberReviewProcedure.input(memberUpdateInput).mutation(({ ctx, input }) => db.createMemberUpdate({ ...input, createdBy: ctx.user.id })),
   }),
   requests: router({
     list: masterProcedure.query(() => db.listAccessRequests()),

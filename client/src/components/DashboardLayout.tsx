@@ -20,7 +20,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/useMobile";
-import { CalendarDays, HandHeart, Images, LayoutDashboard, LogOut, Megaphone, Newspaper, PanelLeft, ShieldCheck, Users, Video } from "lucide-react";
+import { BarChart3, CalendarDays, HandHeart, Images, LayoutDashboard, LogOut, Megaphone, Newspaper, PanelLeft, ShieldCheck, Users, Video } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -36,6 +36,7 @@ const menuItems = [
   { icon: Images, label: "Media", path: "/admin?tab=media" },
   { icon: ShieldCheck, label: "Access requests", path: "/admin/approvals" },
   { icon: HandHeart, label: "Prayer requests", path: "/admin/prayer-requests" },
+  { icon: BarChart3, label: "Member insights", path: "/admin/member-insights", adminOnly: true },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -185,7 +186,7 @@ function DashboardLayoutContent({
 
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1">
-              {menuItems.map(item => {
+              {menuItems.filter(item => !item.adminOnly || user?.role === "admin" || user?.role === "master_admin").map(item => {
                 const isActive = location === item.path;
                 return (
                   <SidebarMenuItem key={item.path}>

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
+import { availabilityOptions, juniorCategoryOptions, ministryOptions, type AvailabilityOptionValue, type JuniorCategoryOptionValue, type MinistryOptionValue } from "@/lib/memberOptions";
 import { validateSignIn, validateSignInField, type SignInErrors, type SignInField } from "@/lib/signInValidation";
 import { Loader2, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
 import { FormEvent, useState } from "react";
@@ -11,11 +12,14 @@ import { Link, useLocation } from "wouter";
 import { storeLocalSessionToken } from "@/lib/localSession";
 
 type Mode = "sign-in" | "member" | "staff";
+type RegistrationPreferences = { ministryInterests: MinistryOptionValue[]; serviceAvailability: AvailabilityOptionValue | null; wantsParishUpdates: boolean; isGuardian: boolean; juniorAgeCategories: JuniorCategoryOptionValue[] };
 const staffRoles = ["worker", "ministry_leader", "editor", "admin"] as const;
+const emptyRegistrationPreferences: RegistrationPreferences = { ministryInterests: [], serviceAvailability: null, wantsParishUpdates: true, isGuardian: false, juniorAgeCategories: [] };
 
 export default function SignIn() {
   const [mode, setMode] = useState<Mode>("sign-in");
   const [signInErrors, setSignInErrors] = useState<SignInErrors>({});
+  const [registrationPreferences, setRegistrationPreferences] = useState<RegistrationPreferences>(emptyRegistrationPreferences);
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const status = trpc.account.setupStatus.useQuery();
@@ -66,6 +70,7 @@ export default function SignIn() {
       accountType: mode === "staff" ? "staff" : "member",
       requestedRole: mode === "staff" ? String(values.get("requestedRole")) as (typeof staffRoles)[number] : undefined,
       requestNote: mode === "staff" ? String(values.get("requestNote") || "") : undefined,
+      onboarding: mode === "member" ? registrationPreferences : undefined,
     });
   };
 
@@ -73,6 +78,8 @@ export default function SignIn() {
     setMode(nextMode);
     setSignInErrors({});
   };
+  const toggleRegistrationMinistry = (value: MinistryOptionValue) => setRegistrationPreferences(current => ({ ...current, ministryInterests: current.ministryInterests.includes(value) ? current.ministryInterests.filter(item => item !== value) : [...current.ministryInterests, value] }));
+  const toggleRegistrationCategory = (value: JuniorCategoryOptionValue) => setRegistrationPreferences(current => ({ ...current, juniorAgeCategories: current.juniorAgeCategories.includes(value) ? current.juniorAgeCategories.filter(item => item !== value) : [...current.juniorAgeCategories, value] }));
 
   return (
     <PublicLayout>
@@ -107,6 +114,7 @@ export default function SignIn() {
                 <Field name="name" label="Full name" required />
                 <Field name="email" label="Email" type="email" required />
                 <Field name="password" label="Password" type="password" minLength={10} hint="Use at least 10 characters." required />
+                {mode === "member" && <section className="rounded-2xl bg-blue-50 p-4"><p className="text-sm font-extrabold text-[#10213e]">Make your parish journey personal</p><p className="mt-1 text-xs leading-5 text-slate-600">Choose interests now; you can always update them later. Ministry interests do not grant staff access.</p><p className="mt-4 text-xs font-extrabold uppercase tracking-[0.1em] text-slate-500">Ministry interests</p><div className="mt-2 grid gap-2 sm:grid-cols-2">{ministryOptions.map(option => <button key={option.value} type="button" onClick={() => toggleRegistrationMinistry(option.value)} className={`rounded-xl border px-3 py-2.5 text-left text-xs font-bold ${registrationPreferences.ministryInterests.includes(option.value) ? "border-[#0b4ab8] bg-white text-[#0b4ab8]" : "border-blue-100 text-slate-600"}`}>{registrationPreferences.ministryInterests.includes(option.value) ? "✓ " : ""}{option.label}</button>)}</div><label className="mt-4 grid gap-1.5 text-xs font-extrabold uppercase tracking-[0.1em] text-slate-500">Availability<select value={registrationPreferences.serviceAvailability ?? ""} onChange={event => setRegistrationPreferences(current => ({ ...current, serviceAvailability: (event.target.value || null) as AvailabilityOptionValue | null }))} className="h-10 rounded-xl border border-blue-100 bg-white px-3 text-sm font-medium normal-case tracking-normal text-[#10213e]"><option value="">Choose later</option>{availabilityOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label className="mt-4 flex items-start gap-3 text-sm leading-6 text-slate-700"><input type="checkbox" checked={registrationPreferences.isGuardian} onChange={event => setRegistrationPreferences(current => ({ ...current, isGuardian: event.target.checked, juniorAgeCategories: event.target.checked ? current.juniorAgeCategories : [] }))} className="mt-1 h-4 w-4 accent-[#0b4ab8]" /><span><strong className="block">I am a parent or guardian</strong>Select Junior Church categories for family resources. No child account is created.</span></label>{registrationPreferences.isGuardian && <div className="mt-3 grid gap-2 sm:grid-cols-2">{juniorCategoryOptions.map(option => <button key={option.value} type="button" onClick={() => toggleRegistrationCategory(option.value)} className={`rounded-xl border px-3 py-2.5 text-left text-xs font-bold ${registrationPreferences.juniorAgeCategories.includes(option.value) ? "border-[#7c1eff] bg-white text-[#7c1eff]" : "border-violet-100 text-slate-600"}`}>{registrationPreferences.juniorAgeCategories.includes(option.value) ? "✓ " : ""}{option.label}</button>)}</div>}</section>}
                 {mode === "staff" && <>
                   <label className="grid gap-1.5 text-xs font-extrabold uppercase tracking-[0.1em] text-slate-500">Requested role
                     <select name="requestedRole" className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium normal-case tracking-normal text-[#10213e]">

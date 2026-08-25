@@ -1,5 +1,12 @@
 # Project TODO
 
+- [x] Define and implement the next interactive parish-platform phase: richer member onboarding and dashboard tools, ministry participation, and a safeguarded Junior Church experience with age-category journeys.
+- [x] Rename Junior Church Lower Teens to Junior Teens and the 3–5 category to 0–5 across public and member experiences.
+- [x] Add member onboarding for ministry interest, service preferences, and guardian-led Junior Church category preferences without creating direct child accounts or public child profiles.
+- [x] Add a meaningful member dashboard with personalised next steps, event interest, parish updates, ministry participation, and secure family resources.
+- [x] Add staff-facing review and targeted update tools for member interests and ministry/family participation records.
+- [x] Respect the saved parish-update opt-out preference when selecting or displaying targeted member updates.
+- [x] Move Family Hub staff redirection into an effect and cover the non-member route behavior with regression tests.
 - [x] Add an in-button loading spinner and accessible inline email/password validation to the shared sign-in form.
 - [x] Diagnose and remove the blocking initialization that makes the shared `/sign-in` page unresponsive immediately after navigation.
 - [x] Diagnose and fix site unresponsiveness reported after opening the retired account panel, including reliable unauthenticated and member-dashboard loading states.

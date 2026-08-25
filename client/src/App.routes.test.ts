@@ -7,7 +7,7 @@ const source = (path: string) => readFileSync(resolve(process.cwd(), path), "utf
 describe("application route destinations", () => {
   it("keeps all primary visitor journeys and staff entry points registered", () => {
     const app = source("client/src/App.tsx");
-    ["/", "/about", "/ministries", "/junior-church", "/sermons", "/events", "/announcements", "/media", "/news", "/visit", "/contact", "/leadership", "/give", "/sign-in", "/member", "/admin", "/admin/approvals"].forEach(path => expect(app).toContain(`path=\"${path}`));
+    ["/", "/about", "/ministries", "/junior-church", "/sermons", "/events", "/announcements", "/media", "/news", "/visit", "/contact", "/leadership", "/give", "/sign-in", "/member", "/member/ministry", "/family-hub", "/admin", "/admin/approvals", "/admin/member-insights"].forEach(path => expect(app).toContain(`path=\"${path}`));
     expect(app).toContain('path="/account" component={LegacyAccountRedirect}');
     expect(app).not.toContain('import Account');
   });

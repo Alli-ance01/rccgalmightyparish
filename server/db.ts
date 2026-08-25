@@ -12,6 +12,12 @@ import type {
   NewPost,
   NewPrayerRequest,
   NewSermon,
+  MemberUpdate,
+  MemberUpdateAudience,
+  MemberProfile,
+  MinistryInterest,
+  JuniorAgeCategory,
+  ServiceAvailability,
   Post,
   PublicUser,
   Sermon,
@@ -56,6 +62,11 @@ async function ensureIndexes(db: Db) {
     db.collection("posts").createIndex({ slug: 1 }, { unique: true }),
     db.collection("ministryPages").createIndex({ slug: 1 }, { unique: true }),
     db.collection("prayerRequests").createIndex({ status: 1, createdAt: -1 }),
+    db.collection("memberProfiles").createIndex({ userId: 1 }, { unique: true }),
+    db.collection("memberProfiles").createIndex({ ministryInterests: 1, updatedAt: -1 }),
+    db.collection("eventInterests").createIndex({ userId: 1, eventId: 1 }, { unique: true }),
+    db.collection("eventInterests").createIndex({ eventId: 1, createdAt: -1 }),
+    db.collection("memberUpdates").createIndex({ isPublished: 1, audience: 1, createdAt: -1 }),
   ]);
 }
 
@@ -200,6 +211,80 @@ export async function reactivateStaff(id: string, approverId: string) {
   const result = await collection("users").findOneAndUpdate({ _id: asId(id), accountType: "staff", role: { $ne: "master_admin" }, accountStatus: "suspended" }, { $set: { accountStatus: "active", suspendedAt: null, approvedBy: approverId, updatedAt: new Date() } }, { returnDocument: "after" });
   if (!result) throw new Error("Suspended staff account not found or protected");
   return toPublicUser(serialize<User>(result));
+}
+
+export async function getMemberProfile(userId: string): Promise<MemberProfile | undefined> {
+  const db = await getDb(); if (!db) return undefined;
+  const record = await collection("memberProfiles").findOne({ userId });
+  return record ? serialize<MemberProfile>(record) : undefined;
+}
+
+export async function saveMemberProfile(input: { userId: string; ministryInterests: MinistryInterest[]; serviceAvailability: ServiceAvailability | null; wantsParishUpdates: boolean; isGuardian: boolean; juniorAgeCategories: JuniorAgeCategory[]; onboardingCompleted?: boolean }): Promise<MemberProfile> {
+  await requireDb();
+  const now = new Date();
+  const result = await collection("memberProfiles").findOneAndUpdate(
+    { userId: input.userId },
+    {
+      $set: {
+        ministryInterests: Array.from(new Set(input.ministryInterests)),
+        serviceAvailability: input.serviceAvailability,
+        wantsParishUpdates: input.wantsParishUpdates,
+        isGuardian: input.isGuardian,
+        juniorAgeCategories: input.isGuardian ? Array.from(new Set(input.juniorAgeCategories)) : [],
+        onboardingCompletedAt: input.onboardingCompleted ? now : null,
+        updatedAt: now,
+      },
+      $setOnInsert: { createdAt: now },
+    },
+    { upsert: true, returnDocument: "after" },
+  );
+  if (!result) throw new Error("Member profile could not be saved");
+  return serialize<MemberProfile>(result);
+}
+
+export async function setEventInterest(input: { userId: string; eventId: string; interested: boolean }) {
+  await requireDb();
+  if (input.interested) {
+    await collection("eventInterests").updateOne({ userId: input.userId, eventId: input.eventId }, { $setOnInsert: { userId: input.userId, eventId: input.eventId, createdAt: new Date(), updatedAt: new Date() } }, { upsert: true });
+  } else {
+    await collection("eventInterests").deleteOne({ userId: input.userId, eventId: input.eventId });
+  }
+  return { eventId: input.eventId, interested: input.interested };
+}
+
+export async function listEventInterestIds(userId: string): Promise<string[]> {
+  const db = await getDb(); if (!db) return [];
+  return (await collection("eventInterests").find({ userId }).toArray()).map(record => String(record.eventId));
+}
+
+export async function listMemberProfilesForStaff() {
+  const db = await getDb(); if (!db) return [];
+  const profiles = (await collection("memberProfiles").find({}).sort({ updatedAt: -1 }).toArray()).map(serialize<MemberProfile>);
+  const users = await collection("users").find({ _id: { $in: profiles.map(profile => asId(profile.userId)) }, accountType: "member", accountStatus: "active" }).toArray();
+  const members = new Map(users.map(user => { const member = toPublicUser(serialize<User>(user)); return [member.id, member] as const; }));
+  return profiles.flatMap(profile => { const member = members.get(profile.userId); return member ? [{ profile, member }] : []; });
+}
+
+export async function createMemberUpdate(input: { title: string; body: string; audience: MemberUpdateAudience; audienceValues: string[]; createdBy: string; isPublished: boolean }) {
+  const id = await saveRecord("memberUpdates", { ...input, audienceValues: Array.from(new Set(input.audienceValues)) });
+  const record = await collection("memberUpdates").findOne({ _id: asId(id) });
+  if (!record) throw new Error("Member update could not be created");
+  return serialize<MemberUpdate>(record);
+}
+
+export async function listMemberUpdatesForStaff(): Promise<MemberUpdate[]> {
+  const db = await getDb(); if (!db) return [];
+  return (await collection("memberUpdates").find({}).sort({ createdAt: -1 }).toArray()).map(serialize<MemberUpdate>);
+}
+
+export async function listMemberUpdatesForUser(userId: string): Promise<MemberUpdate[]> {
+  const db = await getDb(); if (!db) return [];
+  const profile = await getMemberProfile(userId);
+  if (profile && !profile.wantsParishUpdates) return [];
+  const ministryInterests = profile?.ministryInterests ?? [];
+  const juniorAgeCategories = profile?.isGuardian ? profile.juniorAgeCategories : [];
+  const query: Filter<Document> = { isPublished: true, $or: [{ audience: "all" }, { audience: "ministry", audienceValues: { $in: ministryInterests } }, { audience: "junior-category", audienceValues: { $in: juniorAgeCategories } }] };
+  return (await collection("memberUpdates").find(query).sort({ createdAt: -1 }).toArray()).map(serialize<MemberUpdate>);
 }
 
 export async function listSermons(filters?: { search?: string; series?: string; speaker?: string; from?: Date; to?: Date; includeUnpublished?: boolean }): Promise<Sermon[]> {

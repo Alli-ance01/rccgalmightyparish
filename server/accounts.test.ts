@@ -4,7 +4,7 @@ import type { TrpcContext } from "./_core/context";
 
 const dbMock = vi.hoisted(() => ({
   hasMasterAdmin: vi.fn(), getUserByEmail: vi.fn(), createAccount: vi.fn(), createMasterAdmin: vi.fn(), touchUser: vi.fn(),
-  listAccessRequests: vi.fn(), decideStaffRequest: vi.fn(), suspendAccount: vi.fn(), listManagedStaff: vi.fn(), changeStaffRole: vi.fn(), reactivateStaff: vi.fn(), updateAccountName: vi.fn(), updateAccountPassword: vi.fn(), toPublicUser: vi.fn((user: Record<string, unknown>) => user),
+  listAccessRequests: vi.fn(), decideStaffRequest: vi.fn(), suspendAccount: vi.fn(), listManagedStaff: vi.fn(), changeStaffRole: vi.fn(), reactivateStaff: vi.fn(), updateAccountName: vi.fn(), updateAccountPassword: vi.fn(), getMemberProfile: vi.fn(), saveMemberProfile: vi.fn(), listEventInterestIds: vi.fn(), setEventInterest: vi.fn(), listMemberProfilesForStaff: vi.fn(), listMemberUpdatesForUser: vi.fn(), listMemberUpdatesForStaff: vi.fn(), createMemberUpdate: vi.fn(), toPublicUser: vi.fn((user: Record<string, unknown>) => user),
 }));
 const sdkMock = vi.hoisted(() => ({ sdk: { createLocalSession: vi.fn().mockResolvedValue("local-session") } }));
 vi.mock("./db", () => dbMock);
@@ -85,5 +85,32 @@ describe("local TAP account approval workflow", () => {
     expect(dbMock.updateAccountName).toHaveBeenCalledWith(context.user.id, "Updated TAP Member");
     expect(dbMock.updateAccountPassword).toHaveBeenCalledWith(context.user.id, expect.any(String));
     await expect(caller.account.profile.changePassword({ currentPassword: "wrong-password", newPassword: "another-secure-password" })).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  });
+
+  it("stores member preferences and guardian-led Junior Church categories without creating child accounts", async () => {
+    const context = contextFor("member");
+    const caller = appRouter.createCaller(context);
+    dbMock.saveMemberProfile.mockResolvedValue({ userId: context.user.id, ministryInterests: ["junior-church-family"], juniorAgeCategories: ["ages-0-5"], isGuardian: true });
+    dbMock.setEventInterest.mockResolvedValue({ eventId: "507f1f77bcf86cd799439012", interested: true });
+
+    await expect(caller.account.profile.savePreferences({ ministryInterests: ["junior-church-family"], serviceAvailability: "sunday", wantsParishUpdates: true, isGuardian: true, juniorAgeCategories: ["ages-0-5"] })).resolves.toMatchObject({ isGuardian: true });
+    expect(dbMock.saveMemberProfile).toHaveBeenCalledWith(expect.objectContaining({ userId: context.user.id, onboardingCompleted: true }));
+    await expect(caller.account.memberHub.setEventInterest({ eventId: "507f1f77bcf86cd799439012", interested: true })).resolves.toMatchObject({ interested: true });
+    expect(dbMock.setEventInterest).toHaveBeenCalledWith({ userId: context.user.id, eventId: "507f1f77bcf86cd799439012", interested: true });
+    await expect(caller.account.profile.savePreferences({ ministryInterests: [], serviceAvailability: null, wantsParishUpdates: false, isGuardian: false, juniorAgeCategories: ["ages-0-5"] })).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+
+  it("limits member preference review to administrators", async () => {
+    dbMock.listMemberProfilesForStaff.mockResolvedValue([{ profile: { userId: "507f1f77bcf86cd799439012" }, member: { name: "Member" } }]);
+    await expect(appRouter.createCaller(contextFor("admin")).account.memberManagement.listProfiles()).resolves.toHaveLength(1);
+    await expect(appRouter.createCaller(contextFor("member")).account.memberManagement.listProfiles()).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("allows only administrators to publish in-platform targeted parish updates", async () => {
+    const admin = appRouter.createCaller(contextFor("admin"));
+    dbMock.createMemberUpdate.mockResolvedValue({ id: "507f1f77bcf86cd799439012", audience: "ministry", audienceValues: ["almighty-yaya"], isPublished: true });
+    await expect(admin.account.memberManagement.createUpdate({ title: "YAYA gathering", body: "Please check the parish calendar for the next gathering.", audience: "ministry", audienceValues: ["almighty-yaya"], isPublished: true })).resolves.toMatchObject({ audience: "ministry" });
+    expect(dbMock.createMemberUpdate).toHaveBeenCalledWith(expect.objectContaining({ createdBy: "507f1f77bcf86cd799439011", audienceValues: ["almighty-yaya"] }));
+    await expect(appRouter.createCaller(contextFor("member")).account.memberManagement.createUpdate({ title: "Not allowed", body: "An ordinary member cannot publish parish updates.", audience: "all", audienceValues: [], isPublished: true })).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 });

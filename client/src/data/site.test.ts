@@ -11,10 +11,10 @@ describe("TAP public information", () => {
     ]);
     expect(juniorGroups.map(group => group.name)).toEqual([
       "Super Teens",
-      "Lower Teens",
+      "Junior Teens",
       "Preteens/9–12",
       "6–8",
-      "3–5",
+      "0–5",
     ]);
   });
 

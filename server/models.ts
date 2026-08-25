@@ -29,6 +29,46 @@ export type PublicUser = Omit<User, "passwordHash">;
 
 type Entity = { id: string; createdAt: Date; updatedAt: Date };
 
+export const MINISTRY_INTERESTS = ["almighty-elders", "almighty-excellent-men", "almighty-good-women", "almighty-yaya", "junior-church-family"] as const;
+export type MinistryInterest = (typeof MINISTRY_INTERESTS)[number];
+
+export const SERVICE_AVAILABILITY = ["sunday", "weekday", "flexible"] as const;
+export type ServiceAvailability = (typeof SERVICE_AVAILABILITY)[number];
+
+export const JUNIOR_AGE_CATEGORIES = ["super-teens", "junior-teens", "preteens-9-12", "ages-6-8", "ages-0-5"] as const;
+export type JuniorAgeCategory = (typeof JUNIOR_AGE_CATEGORIES)[number];
+
+export type MemberProfile = Entity & {
+  userId: string;
+  ministryInterests: MinistryInterest[];
+  serviceAvailability: ServiceAvailability | null;
+  wantsParishUpdates: boolean;
+  isGuardian: boolean;
+  juniorAgeCategories: JuniorAgeCategory[];
+  onboardingCompletedAt: Date | null;
+};
+
+export type EventInterest = Entity & {
+  userId: string;
+  eventId: string;
+};
+
+export const MEMBER_UPDATE_AUDIENCES = ["all", "ministry", "junior-category"] as const;
+export type MemberUpdateAudience = (typeof MEMBER_UPDATE_AUDIENCES)[number];
+
+export type MemberUpdate = Entity & {
+  title: string;
+  body: string;
+  audience: MemberUpdateAudience;
+  audienceValues: string[];
+  createdBy: string;
+  isPublished: boolean;
+};
+
+export type NewMemberProfile = Omit<MemberProfile, keyof Entity>;
+export type NewEventInterest = Omit<EventInterest, keyof Entity>;
+export type NewMemberUpdate = Omit<MemberUpdate, keyof Entity>;
+
 export type Sermon = Entity & {
   title: string;
   slug: string;

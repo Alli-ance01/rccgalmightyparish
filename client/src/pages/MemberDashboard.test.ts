@@ -15,5 +15,9 @@ describe("member dashboard routing", () => {
     expect(page).toContain("Retry dashboard");
     expect(page).toContain("We could not open your dashboard.");
     expect(page).toContain("Member dashboard");
+    expect(page).toContain("savePreferences.mutate(preferences)");
+    expect(page).toContain("setEventInterest.mutate");
+    expect(page).toContain("Junior Church categories");
+    expect(page).toContain("We do not create child accounts");
   });
 });
