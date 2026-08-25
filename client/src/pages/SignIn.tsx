@@ -1,4 +1,5 @@
 import PublicLayout from "@/components/PublicLayout";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,7 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { availabilityOptions, juniorCategoryOptions, ministryOptions, type AvailabilityOptionValue, type JuniorCategoryOptionValue, type MinistryOptionValue } from "@/lib/memberOptions";
 import { validateSignIn, validateSignInField, type SignInErrors, type SignInField } from "@/lib/signInValidation";
 import { Loader2, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Link, useLocation } from "wouter";
 import { storeLocalSessionToken } from "@/lib/localSession";
@@ -21,8 +22,10 @@ export default function SignIn() {
   const [signInErrors, setSignInErrors] = useState<SignInErrors>({});
   const [registrationPreferences, setRegistrationPreferences] = useState<RegistrationPreferences>(emptyRegistrationPreferences);
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
   const utils = trpc.useUtils();
   const status = trpc.account.setupStatus.useQuery();
+  useEffect(() => { if (user) setLocation(user.role === "member" ? "/member" : "/admin"); }, [setLocation, user]);
   const signIn = trpc.account.signIn.useMutation({
     onSuccess: async result => {
       storeLocalSessionToken(result.sessionToken);

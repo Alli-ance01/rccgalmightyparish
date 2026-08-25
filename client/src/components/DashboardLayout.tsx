@@ -49,11 +49,14 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [, setLocation] = useLocation();
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
   const { loading, user } = useAuth();
+
+  useEffect(() => { if (user?.role === "member") setLocation("/member"); }, [setLocation, user]);
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -86,6 +89,8 @@ export default function DashboardLayout({
       </div>
     );
   }
+
+  if (user.role === "member") return <DashboardLayoutSkeleton />;
 
   return (
     <SidebarProvider

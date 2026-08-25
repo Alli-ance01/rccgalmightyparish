@@ -1,5 +1,8 @@
 # Project TODO
 
+- [x] Audit and refine public, member, family, ministry, and staff routes so each has a clear landing purpose, role-aware destination, and reliable recovery state.
+- [x] Remove repeated or obsolete copy, duplicated calls to action, and redundant navigation paths without removing useful parish information.
+- [x] Add regression coverage for canonical route destinations, legacy-route recovery, and key role-aware landing behavior.
 - [x] Define and implement the next interactive parish-platform phase: richer member onboarding and dashboard tools, ministry participation, and a safeguarded Junior Church experience with age-category journeys.
 - [x] Rename Junior Church Lower Teens to Junior Teens and the 3–5 category to 0–5 across public and member experiences.
 - [x] Add member onboarding for ministry interest, service preferences, and guardian-led Junior Church category preferences without creating direct child accounts or public child profiles.

@@ -27,8 +27,7 @@ export default function SiteFooter() {
         <div>
           <p className="eyebrow text-[#d7ff54]">Find RCCG TAP</p>
           <p className="mt-5 flex items-start gap-2 text-sm leading-6 text-blue-50"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#d7ff54]" />{site.city}</p>
-          <p className="mt-3 text-sm leading-6 text-blue-200">Specific campus directions and contact channels will be shared by the church office.</p>
-          <p className="mt-6 text-xs leading-5 text-blue-200">Official YouTube and Instagram links will be added when the parish confirms them.</p>
+          <p className="mt-3 text-sm leading-6 text-blue-200">Find the full address, service information, and direct contact details on the <Link href="/visit" className="font-bold text-[#d7ff54] underline underline-offset-4">Visit us</Link> page.</p>
         </div>
       </div>
       <div className="border-t border-white/10"><div className="container flex flex-col justify-between gap-2 py-5 text-[0.68rem] font-bold tracking-wide text-blue-300 sm:flex-row"><span>© {new Date().getFullYear()} {site.name}</span><span>Built as a digital home for Ibadan.</span></div></div>
