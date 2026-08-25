@@ -2,8 +2,8 @@ import { useEffect, useRef } from "react";
 
 const replacements: Array<[RegExp, string]> = [
   [/TAP Church/g, "RCCG, The Almighty Parish"],
-  [/TAP accounts/g, "RCCG TAP accounts"],
-  [/TAP account/g, "RCCG TAP account"],
+  [/(?<!RCCG )TAP accounts/g, "RCCG TAP accounts"],
+  [/(?<!RCCG )TAP account/g, "RCCG TAP account"],
   [/TAP home/g, "RCCG TAP home"],
   [/at TAP\b/g, "at RCCG TAP"],
   [/About TAP/g, "About RCCG TAP"],
