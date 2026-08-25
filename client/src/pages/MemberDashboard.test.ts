@@ -6,7 +6,10 @@ describe("member dashboard routing", () => {
   it("keeps member care private and redirects staff to the staff workspace", () => {
     const page = readFileSync(resolve(process.cwd(), "client/src/pages/MemberDashboard.tsx"), "utf8");
     const signIn = readFileSync(resolve(process.cwd(), "client/src/pages/SignIn.tsx"), "utf8");
-    expect(signIn).toContain('user.user.role === "member" ? "/member" : "/admin"');
+    expect(signIn).toContain('result.user.role === "member" ? "/member" : "/admin"');
+    expect(signIn).toContain("Loader2");
+    expect(signIn).toContain("aria-busy={signIn.isPending}");
+    expect(signIn).toContain("validateSignIn(credentials)");
     expect(page).toContain('redirectPath: "/sign-in"');
     expect(page).toContain('if (user && user.role !== "member") setLocation("/admin")');
     expect(page).toContain("Retry dashboard");
