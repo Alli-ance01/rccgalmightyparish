@@ -21,9 +21,9 @@ describe("local TAP account approval workflow", () => {
 
   it("creates staff accounts as pending requests rather than active staff sessions", async () => {
     const caller = appRouter.createCaller(contextFor("member"));
-    const result = await caller.account.register({ name: "Ministry Worker", email: "worker@tapchurch.org", password: "secure-password", accountType: "staff", requestedRole: "editor", requestNote: "I help with weekly notices." });
+    const result = await caller.account.register({ name: "Ministry Worker", email: "worker@tapchurch.org", password: "secure-password", accountType: "staff", requestedRole: "worker", requestNote: "I help with weekly notices." });
     expect(result.message).toContain("awaiting Master Admin approval");
-    expect(dbMock.createAccount).toHaveBeenCalledWith(expect.objectContaining({ accountType: "staff", requestedRole: "editor" }));
+    expect(dbMock.createAccount).toHaveBeenCalledWith(expect.objectContaining({ accountType: "staff", requestedRole: "worker" }));
   });
 
   it("allows only the Master Admin to approve a staff request", async () => {

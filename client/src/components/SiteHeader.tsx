@@ -9,9 +9,7 @@ const utilities = [
   { label: "Leadership", href: "/leadership" },
   { label: "Junior Church", href: "/junior-church" },
   { label: "Media", href: "/media" },
-  { label: "News", href: "/news" },
   { label: "Announcements", href: "/announcements" },
-  { label: "Sign in", href: "/sign-in" },
 ];
 
 export function TapMark({ inverse = false }: { inverse?: boolean }) {
@@ -31,7 +29,6 @@ export default function SiteHeader() {
   const [location] = useLocation();
   const announcements = trpc.content.announcements.list.useQuery();
   const notice = announcements.data?.[0];
-
   const isActive = (href: string) => href === "/" ? location === "/" : location.startsWith(href);
 
   return (
@@ -53,17 +50,7 @@ export default function SiteHeader() {
         </div>
         <button className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-white text-[#10213e] lg:hidden" onClick={() => setOpen(value => !value)} aria-label={open ? "Close navigation" : "Open navigation"}>{open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}</button>
       </div>
-      {open && (
-        <div className="border-t border-slate-200 bg-[#f7f9fc] px-4 pb-5 pt-3 lg:hidden">
-          <nav className="container grid gap-1" aria-label="Mobile navigation">
-            {[...navigation, ...utilities].map(item => <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className={`rounded-xl px-3 py-3 text-sm font-bold ${isActive(item.href) ? "bg-blue-50 text-[#0b4ab8]" : "text-slate-700 hover:bg-white"}`}>{item.label}</Link>)}
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <Link href="/visit" onClick={() => setOpen(false)} className="tap-button rounded-xl border border-[#0b4ab8] px-3 py-3 text-center text-xs font-extrabold text-[#0b4ab8]">Plan a Visit</Link>
-              <Link href="/sermons" onClick={() => setOpen(false)} className="tap-button rounded-xl bg-[#0b4ab8] px-3 py-3 text-center text-xs font-extrabold text-white">Watch Sermon</Link>
-            </div>
-          </nav>
-        </div>
-      )}
+      {open && <div className="border-t border-slate-200 bg-[#f7f9fc] px-4 pb-5 pt-3 lg:hidden"><nav className="container grid gap-1" aria-label="Mobile navigation">{[...navigation, ...utilities].map(item => <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className={`rounded-xl px-3 py-3 text-sm font-bold ${isActive(item.href) ? "bg-blue-50 text-[#0b4ab8]" : "text-slate-700 hover:bg-white"}`}>{item.label}</Link>)}<div className="mt-3 grid grid-cols-2 gap-2"><Link href="/visit" onClick={() => setOpen(false)} className="tap-button rounded-xl border border-[#0b4ab8] px-3 py-3 text-center text-xs font-extrabold text-[#0b4ab8]">Plan a Visit</Link><Link href="/sermons" onClick={() => setOpen(false)} className="tap-button rounded-xl bg-[#0b4ab8] px-3 py-3 text-center text-xs font-extrabold text-white">Watch Sermon</Link></div></nav></div>}
     </header>
   );
 }

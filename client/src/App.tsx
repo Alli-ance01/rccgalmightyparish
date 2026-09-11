@@ -23,9 +23,7 @@ import MinistryHub from "./pages/MinistryHub";
 import MasterSetup from "./pages/MasterSetup";
 import Ministries from "./pages/Ministries";
 import MinistryDetail from "./pages/MinistryDetail";
-import News from "./pages/News";
 import NotFound from "./pages/NotFound";
-import PostDetail from "./pages/PostDetail";
 import PrayerRequests from "./pages/PrayerRequests";
 import SermonDetail from "./pages/SermonDetail";
 import Sermons from "./pages/Sermons";
@@ -47,6 +45,12 @@ function LegacyAccountRedirect() {
   return <div className="grid min-h-screen place-items-center bg-slate-50 text-sm font-bold text-slate-600">Taking you to sign in…</div>;
 }
 
+function NewsRedirect() {
+  const [, setLocation] = useLocation();
+  useEffect(() => { setLocation("/announcements"); }, [setLocation]);
+  return <div className="grid min-h-screen place-items-center bg-slate-50 text-sm font-bold text-slate-600">Taking you to announcements…</div>;
+}
+
 function Router() {
   return <Switch>
     <Route path="/" component={Home} />
@@ -64,8 +68,8 @@ function Router() {
     <Route path="/leadership" component={Leadership} />
     <Route path="/media" component={Media} />
     <Route path="/media/:id" component={MediaDetail} />
-    <Route path="/news" component={News} />
-    <Route path="/news/:slug" component={PostDetail} />
+    <Route path="/news" component={NewsRedirect} />
+    <Route path="/news/:slug" component={NewsRedirect} />
     <Route path="/announcements" component={Announcements} />
     <Route path="/announcements/:id" component={AnnouncementDetail} />
     <Route path="/sign-in" component={SignIn} />

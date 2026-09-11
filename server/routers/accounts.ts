@@ -69,8 +69,9 @@ export const accountRouter = router({
     return { user, sessionToken };
   }),
   register: publicProcedure.input(accountInput).mutation(async ({ input }) => {
+    if (input.accountType === "member") throw new TRPCError({ code: "FORBIDDEN", message: "Member signup is not available. Request worker access or use the private admin endpoint." });
     if (await db.getUserByEmail(input.email)) throw new TRPCError({ code: "CONFLICT", message: "An account already exists for this email." });
-    if (input.accountType === "staff" && !input.requestedRole) throw new TRPCError({ code: "BAD_REQUEST", message: "Choose the staff role you are requesting." });
+    if (input.requestedRole !== "worker") throw new TRPCError({ code: "BAD_REQUEST", message: "Only worker access requests are available." });
     const account = await db.createAccount({
       name: input.name, email: input.email, passwordHash: await bcrypt.hash(input.password, 12), accountType: input.accountType,
       requestedRole: input.accountType === "staff" ? input.requestedRole : undefined, requestNote: input.requestNote,

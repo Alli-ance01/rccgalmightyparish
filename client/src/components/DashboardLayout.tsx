@@ -20,7 +20,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/useMobile";
-import { BarChart3, CalendarDays, HandHeart, Images, LayoutDashboard, LogOut, Megaphone, Newspaper, PanelLeft, ShieldCheck, Users, Video } from "lucide-react";
+import { BarChart3, CalendarDays, HandHeart, Images, LayoutDashboard, LogOut, Megaphone, PanelLeft, ShieldCheck, Users, Video } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -30,7 +30,6 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/admin" },
   { icon: CalendarDays, label: "Events", path: "/admin?tab=events" },
   { icon: Video, label: "Sermons", path: "/admin?tab=sermons" },
-  { icon: Newspaper, label: "News", path: "/admin?tab=news" },
   { icon: Users, label: "Ministries", path: "/admin?tab=ministries" },
   { icon: Megaphone, label: "Announcements", path: "/admin?tab=announcements" },
   { icon: Images, label: "Media", path: "/admin?tab=media" },

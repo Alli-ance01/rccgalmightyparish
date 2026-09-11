@@ -16,8 +16,9 @@ describe("application route destinations", () => {
     const header = source("client/src/components/SiteHeader.tsx");
     const footer = source("client/src/components/SiteFooter.tsx");
     expect(header).toContain('{ label: "Announcements", href: "/announcements" }');
-    expect(header).toContain('{ label: "Sign in", href: "/sign-in" }');
-    expect(footer).toContain('{ label: "Sign in", href: "/sign-in" }');
+    expect(header).not.toContain('{ label: "Sign in", href: "/sign-in" }');
+    expect(footer).not.toContain('{ label: "Sign in", href: "/sign-in" }');
+    expect(header).not.toContain('{ label: "News", href: "/news" }');
     expect(header).not.toContain('href: "/account"');
     expect(footer).not.toContain('href: "/account"');
     expect(footer).not.toContain('href="#"');
@@ -27,7 +28,7 @@ describe("application route destinations", () => {
     const signIn = source("client/src/pages/SignIn.tsx");
     const shell = source("client/src/components/DashboardLayout.tsx");
     const junior = source("client/src/pages/JuniorChurch.tsx");
-    expect(signIn).toContain('setLocation(user.role === "member" ? "/member" : "/admin")');
+    expect(signIn).toContain('setLocation("/admin")');
     expect(shell).toContain('if (user?.role === "member") setLocation("/member")');
     expect(junior).toContain('href="#age-groups"');
     expect(junior.match(/href="\/family-hub"/g)).toHaveLength(1);
