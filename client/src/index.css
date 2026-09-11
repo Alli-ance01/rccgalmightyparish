@@ -21,13 +21,14 @@ button:active, .tap-button:active { transform: scale(0.97); }
 .display { font-family: var(--font-display); letter-spacing: -0.055em; }
 .eyebrow { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
 .container { width: min(100% - 2rem, 75rem); margin-inline: auto; }
-.parish-watermark { position: absolute; top: 12rem; left: 50%; width: min(42rem, 78vw); transform: translateX(-50%); opacity: 0.055; filter: saturate(0.8); mix-blend-mode: multiply; }
+.parish-watermark-sticky { position: sticky; top: 24vh; z-index: 0; height: 0; pointer-events: none; }
+.parish-watermark { position: absolute; top: 0; left: 50%; width: min(64rem, 92vw); transform: translate(-50%, -50%); opacity: 0.08; filter: saturate(0.8); mix-blend-mode: multiply; }
 .mesh { background-color: #082b73; background-image: radial-gradient(circle at 16% 18%, rgba(80, 170, 255, 0.9), transparent 34%), radial-gradient(circle at 80% 76%, rgba(10, 74, 184, 0.8), transparent 42%), linear-gradient(124deg, rgba(10, 45, 123, 0.7), rgba(5, 21, 67, 0.98)); }
 .grid-noise { background-image: linear-gradient(rgba(18, 68, 151, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(18, 68, 151, 0.08) 1px, transparent 1px); background-size: 28px 28px; }
 .thin-rule { height: 1px; background: linear-gradient(90deg, transparent, #c9d8eb 12%, #c9d8eb 88%, transparent); }
 .junior-surface { background: #22104a; color: #f8f6ff; background-image: radial-gradient(circle at 76% 9%, rgba(255, 101, 195, 0.54), transparent 23%), radial-gradient(circle at 8% 82%, rgba(187, 255, 60, 0.31), transparent 28%); }
 .junior-grid { background-image: linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px); background-size: 27px 27px; }
-@media (max-width: 640px) { .parish-watermark { top: 10rem; width: 28rem; } }
+@media (max-width: 640px) { .parish-watermark-sticky { top: 25vh; } .parish-watermark { width: 38rem; } }
 @media (prefers-reduced-motion: no-preference) { .float-slow { animation: float-slow 7s var(--ease-in-out) infinite alternate; } .enter { animation: enter 520ms var(--ease-out) both; } }
 @keyframes float-slow { from { transform: translateY(-6px) rotate(-1deg); } to { transform: translateY(8px) rotate(1deg); } }
 @keyframes enter { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
