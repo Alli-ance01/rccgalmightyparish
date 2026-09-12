@@ -110,7 +110,7 @@ function DashboardLayoutContent({
   setSidebarWidth,
 }: DashboardLayoutContentProps) {
   const { user, logout } = useAuth();
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
@@ -190,7 +190,7 @@ function DashboardLayoutContent({
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
                       isActive={isActive}
-                      onClick={() => { window.dispatchEvent(new CustomEvent("admin-tab-change", { detail: item.tab })); }}
+                      onClick={() => { if (item.tab) window.dispatchEvent(new CustomEvent("admin-tab-change", { detail: item.tab })); else setLocation(item.path); }}
                       tooltip={item.label}
                       className={`h-10 transition-all font-normal`}
                     >
