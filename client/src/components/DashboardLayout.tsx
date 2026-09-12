@@ -27,12 +27,12 @@ import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Overview", path: "/admin" },
-  { icon: CalendarDays, label: "Events", path: "/admin?tab=events" },
-  { icon: Video, label: "Sermons", path: "/admin?tab=sermons" },
-  { icon: Megaphone, label: "Announcements", path: "/admin?tab=announcements" },
-  { icon: Images, label: "Media", path: "/admin?tab=media" },
-  { icon: ShieldCheck, label: "Administrators", path: "/admin?tab=administrators" },
+  { icon: LayoutDashboard, label: "Overview", path: "/admin", tab: "overview" },
+  { icon: CalendarDays, label: "Events", path: "/admin", tab: "events" },
+  { icon: Video, label: "Sermons", path: "/admin", tab: "sermons" },
+  { icon: Megaphone, label: "Announcements", path: "/admin", tab: "announcements" },
+  { icon: Images, label: "Media", path: "/admin", tab: "media" },
+  { icon: ShieldCheck, label: "Administrators", path: "/admin", tab: "administrators" },
   { icon: HandHeart, label: "Prayer requests", path: "/admin/prayer-requests" },
 ];
 
@@ -190,7 +190,7 @@ function DashboardLayoutContent({
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
                       isActive={isActive}
-                      onClick={() => { window.location.assign(item.path); }}
+                      onClick={() => { window.dispatchEvent(new CustomEvent("admin-tab-change", { detail: item.tab })); }}
                       tooltip={item.label}
                       className={`h-10 transition-all font-normal`}
                     >

@@ -44,6 +44,17 @@ function AdminWorkspace() {
   const { data: summary, isLoading: summaryLoading, isError: summaryError, refetch: refetchSummary } = trpc.content.admin.summary.useQuery(undefined, { enabled: isAdmin });
   const { data: all, isLoading: contentLoading, isError: contentError, refetch: refetchContent } = trpc.content.admin.all.useQuery(undefined, { enabled: isAdmin });
   useEffect(() => { setTab(initialTab); setEditing(null); }, [location]);
+  useEffect(() => {
+    const handleTabChange = (event: Event) => {
+      const next = (event as CustomEvent<string>).detail;
+      if (["overview", "events", "sermons", "announcements", "media", "administrators"].includes(next)) {
+        setTab(next as Tab);
+        setEditing(null);
+      }
+    };
+    window.addEventListener("admin-tab-change", handleTabChange);
+    return () => window.removeEventListener("admin-tab-change", handleTabChange);
+  }, []);
 
   if (loading) return <div className="grid min-h-[50vh] place-items-center"><Loader2 className="h-6 w-6 animate-spin text-[#0b4ab8]" /></div>;
   if (!isAdmin) return <section className="mx-auto max-w-2xl py-16"><p className="eyebrow text-[#0b4ab8]">TAP admin workspace</p><h1 className="display mt-4 text-5xl leading-[0.95] text-[#10213e]">This area is for administrators only.</h1><p className="mt-5 text-sm leading-7 text-slate-600">Only approved administrators can access this workspace.</p></section>;
