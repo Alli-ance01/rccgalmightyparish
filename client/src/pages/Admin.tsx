@@ -37,7 +37,7 @@ function AdminWorkspace() {
   const role = user?.role;
   const isAdmin = role === "admin";
   const canEdit = isAdmin;
-  const queryTab = new URLSearchParams(location.split("?")[1] ?? "").get("tab");
+  const queryTab = new URLSearchParams(window.location.search).get("tab");
   const initialTab: Tab = queryTab === "events" || queryTab === "sermons" || queryTab === "announcements" || queryTab === "media" || queryTab === "administrators" ? queryTab : "overview";
   const [tab, setTab] = useState<Tab>(initialTab);
   const [editing, setEditing] = useState<string | null>(null);
