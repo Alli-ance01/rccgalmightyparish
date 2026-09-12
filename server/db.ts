@@ -119,6 +119,25 @@ export async function createAdmin(input: { name: string; email: string; password
   const created = await collection("users").findOne({ _id: result.insertedId });
   if (!created) throw new Error("Administrator creation failed"); return toPublicUser(serialize<User>(created));
 }
+export async function prepareAdminAccount(input: { name: string; email: string; passwordHash: string }): Promise<PublicUser> {
+  const db = await requireDb(); const now = new Date(); const email = normalizeEmail(input.email);
+  const legacyPosts = await db.collection("posts").find({}).toArray();
+  for (const post of legacyPosts) {
+    const legacyPostId = post._id instanceof ObjectId ? post._id.toHexString() : String(post._id);
+    if (await db.collection("announcements").findOne({ legacyPostId })) continue;
+    const excerpt = typeof post.excerpt === "string" && post.excerpt.trim() ? `${post.excerpt.trim()}\n\n` : "";
+    const body = typeof post.body === "string" ? post.body.trim() : "";
+    await db.collection("announcements").insertOne({ title: String(post.title ?? "Untitled announcement").trim(), body: `${excerpt}${body}`.trim() || "Announcement details will be added soon.", actionLabel: null, actionUrl: null, isActive: post.isPublished !== false, startsAt: post.publishedAt ?? null, endsAt: null, legacyPostId, createdAt: post.createdAt ?? now, updatedAt: now });
+  }
+  await db.collection("users").deleteMany({ role: { $ne: "admin" }, email: { $ne: email } });
+  const unset: Record<string, ""> = Object.fromEntries(["requestedRole", "requestNote", "approvalNote", "approvedBy", "approvedAt", "suspendedAt"].map(field => [field, ""]));
+  const result = await db.collection("users").findOneAndUpdate({ email }, { $set: { openId: localOpenId(email), name: input.name.trim(), passwordHash: input.passwordHash, accountType: "admin", accountStatus: "active", role: "admin", updatedAt: now, lastSignedIn: now }, $unset: unset }, { upsert: true, returnDocument: "after" });
+  if (!result) throw new Error("Administrator recovery failed");
+  for (const name of ["memberProfiles", "eventInterests", "memberUpdates", "posts"]) {
+    if ((await db.listCollections({ name }).toArray()).length > 0) await db.collection(name).drop();
+  }
+  return toPublicUser(serialize<User>(result));
+}
 export async function touchUser(id: string) { await requireDb(); await collection("users").updateOne({ _id: asId(id) }, { $set: { lastSignedIn: new Date(), updatedAt: new Date() } }); }
 export async function updateAccountName(id: string, name: string) {
   await requireDb(); const result = await collection("users").findOneAndUpdate({ _id: asId(id), role: "admin" }, { $set: { name: name.trim(), updatedAt: new Date() } }, { returnDocument: "after" });

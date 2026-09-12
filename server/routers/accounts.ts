@@ -15,11 +15,10 @@ function setLocalSession(ctx: { req: any; res: any }, token: string) { ctx.res.c
 export const accountRouter = router({
   setupStatus: publicProcedure.query(async () => ({ needsSetup: !(await db.hasAdmin()), adminEmail: ENV.initialMasterAdminEmail })),
   setupAdmin: publicProcedure.input(z.object({ name: z.string().trim().min(2).max(120), email, password, setupToken: z.string().min(1) })).mutation(async ({ ctx, input }) => {
-    if (await db.hasAdmin()) throw new TRPCError({ code: "CONFLICT", message: "The administrator account has already been created." });
     if (!ENV.initialMasterAdminSetupToken || input.setupToken !== ENV.initialMasterAdminSetupToken) throw new TRPCError({ code: "FORBIDDEN", message: "The setup token is invalid or missing from the server configuration." });
     if (input.email !== ENV.initialMasterAdminEmail) throw new TRPCError({ code: "FORBIDDEN", message: "This setup is restricted to the configured administrator email." });
-    if (await db.getUserByEmail(input.email)) throw new TRPCError({ code: "CONFLICT", message: "An account already exists for this email." });
-    const user = await db.createAdmin({ name: input.name, email: input.email, passwordHash: await bcrypt.hash(input.password, 12) });
+    const passwordHash = await bcrypt.hash(input.password, 12);
+    const user = await db.prepareAdminAccount({ name: input.name, email: input.email, passwordHash });
     const sessionToken = await sdk.createLocalSession(user); setLocalSession(ctx, sessionToken); return { user, sessionToken };
   }),
   signIn: publicProcedure.input(z.object({ email, password: z.string().min(1) })).mutation(async ({ ctx, input }) => {
