@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { getAnnouncementStatus, type AnnouncementSchedule } from "@/lib/announcementStatus";
 import { CalendarDays, FilePlus2, Images, Loader2, Megaphone, Pencil, Plus, ShieldCheck, Trash2, Video } from "lucide-react";
-import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useLocation } from "wouter";
 
 type Tab = "overview" | "events" | "sermons" | "announcements" | "media" | "administrators";
 type Row = Record<string, unknown> & { id: string };
@@ -31,14 +32,18 @@ export default function Admin() {
 }
 
 function AdminWorkspace() {
+  const [location] = useLocation();
   const { user, loading } = useAuth();
   const role = user?.role;
   const isAdmin = role === "admin";
   const canEdit = isAdmin;
-  const [tab, setTab] = useState<Tab>("overview");
+  const queryTab = new URLSearchParams(location.split("?")[1] ?? "").get("tab");
+  const initialTab: Tab = queryTab === "events" || queryTab === "sermons" || queryTab === "announcements" || queryTab === "media" || queryTab === "administrators" ? queryTab : "overview";
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [editing, setEditing] = useState<string | null>(null);
   const { data: summary, isLoading: summaryLoading, isError: summaryError, refetch: refetchSummary } = trpc.content.admin.summary.useQuery(undefined, { enabled: isAdmin });
   const { data: all, isLoading: contentLoading, isError: contentError, refetch: refetchContent } = trpc.content.admin.all.useQuery(undefined, { enabled: isAdmin });
+  useEffect(() => { setTab(initialTab); setEditing(null); }, [location]);
 
   if (loading) return <div className="grid min-h-[50vh] place-items-center"><Loader2 className="h-6 w-6 animate-spin text-[#0b4ab8]" /></div>;
   if (!isAdmin) return <section className="mx-auto max-w-2xl py-16"><p className="eyebrow text-[#0b4ab8]">TAP admin workspace</p><h1 className="display mt-4 text-5xl leading-[0.95] text-[#10213e]">This area is for administrators only.</h1><p className="mt-5 text-sm leading-7 text-slate-600">Only approved administrators can access this workspace.</p></section>;
