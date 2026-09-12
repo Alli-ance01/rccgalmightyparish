@@ -6,12 +6,12 @@ import { QueryError } from "@/components/PageBits";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { getAnnouncementStatus, type AnnouncementSchedule } from "@/lib/announcementStatus";
-import { CalendarDays, FilePlus2, HandHeart, Images, Loader2, Megaphone, Pencil, Plus, ShieldCheck, Trash2, Video } from "lucide-react";
+import { CalendarDays, FilePlus2, HandHeart, Images, Loader2, Megaphone, Pencil, Plus, ShieldCheck, Trash2, Video, Waypoints } from "lucide-react";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 
-type Tab = "overview" | "events" | "sermons" | "announcements" | "media" | "administrators" | "prayer-requests";
+type Tab = "overview" | "events" | "sermons" | "announcements" | "media" | "ministries" | "administrators" | "prayer-requests";
 type Row = Record<string, unknown> & { id: string };
 
 const tabItems: Array<{ id: Tab; label: string; icon: typeof CalendarDays }> = [
@@ -20,6 +20,7 @@ const tabItems: Array<{ id: Tab; label: string; icon: typeof CalendarDays }> = [
   { id: "sermons", label: "Sermons", icon: Video },
   { id: "announcements", label: "Announcements", icon: Megaphone },
   { id: "media", label: "Media", icon: Images },
+  { id: "ministries", label: "Ministries", icon: Waypoints },
   { id: "administrators", label: "Administrators", icon: ShieldCheck },
   { id: "prayer-requests", label: "Prayer requests", icon: HandHeart },
 ];
@@ -40,7 +41,7 @@ function AdminWorkspace() {
   const isAdmin = role === "admin";
   const canEdit = isAdmin;
   const queryTab = new URLSearchParams(window.location.search).get("tab");
-  const initialTab: Tab = queryTab === "events" || queryTab === "sermons" || queryTab === "announcements" || queryTab === "media" || queryTab === "administrators" || queryTab === "prayer-requests" ? queryTab : "overview";
+  const initialTab: Tab = queryTab === "events" || queryTab === "sermons" || queryTab === "announcements" || queryTab === "media" || queryTab === "ministries" || queryTab === "administrators" || queryTab === "prayer-requests" ? queryTab : "overview";
   const [tab, setTab] = useState<Tab>(initialTab);
   const [editing, setEditing] = useState<string | null>(null);
   const { data: summary, isLoading: summaryLoading, isError: summaryError, refetch: refetchSummary } = trpc.content.admin.summary.useQuery(undefined, { enabled: isAdmin });
@@ -49,7 +50,7 @@ function AdminWorkspace() {
   useEffect(() => {
     const handleTabChange = (event: Event) => {
       const next = (event as CustomEvent<string>).detail;
-      if (["overview", "events", "sermons", "announcements", "media", "administrators", "prayer-requests"].includes(next)) {
+      if (["overview", "events", "sermons", "announcements", "media", "ministries", "administrators", "prayer-requests"].includes(next)) {
         setTab(next as Tab);
         setEditing(null);
       }
@@ -63,7 +64,7 @@ function AdminWorkspace() {
   if (summaryError || contentError) return <section className="mx-auto max-w-2xl py-16"><QueryError label="The admin workspace could not load its latest content." retry={() => { void refetchSummary(); void refetchContent(); }} /></section>;
 
   const title = tabItems.find(item => item.id === tab)?.label ?? "Overview";
-  const rows = tab === "events" ? all?.events : tab === "sermons" ? all?.sermons : tab === "announcements" ? all?.announcements : tab === "media" ? all?.media : [];
+  const rows = tab === "events" ? all?.events : tab === "sermons" ? all?.sermons : tab === "announcements" ? all?.announcements : tab === "media" ? all?.media : tab === "ministries" ? all?.ministries : [];
   const selected = editing ? (rows as Row[] | undefined)?.find(row => row.id === editing) : undefined;
 
   return <section className="mx-auto max-w-6xl py-5 sm:py-8"><div className="flex flex-col justify-between gap-5 border-b border-slate-200 pb-7 sm:flex-row sm:items-end"><div><p className="eyebrow text-[#0b4ab8]">TAP admin workspace</p><h1 className="display mt-3 text-4xl leading-none text-[#10213e]">{title}</h1><p className="mt-3 text-sm text-slate-500">Signed in as {user?.name ?? "Administrator"} · {role?.replace("_", " ")}</p></div><a href="/" className="text-xs font-extrabold text-[#0b4ab8]">View public site ↗</a></div>
@@ -78,7 +79,7 @@ function Overview({ summary, loading, setTab }: { summary?: { sermons: number; e
 }
 
 function ContentWorkspace({ tab, canEdit, loading, rows, selected, onEdit, onCancel }: { tab: Exclude<Tab, "overview">; canEdit: boolean; loading: boolean; rows: Row[]; selected?: Row; onEdit: (id: string | null) => void; onCancel: () => void }) {
-  const title = tab === "media" ? "media asset" : tab.slice(0, -1);
+  const title = tab === "media" ? "media asset" : tab === "ministries" ? "ministry page" : tab.slice(0, -1);
   return <div className="mt-8 grid gap-7 xl:grid-cols-[1fr_1.08fr]"><div><div className="flex items-center justify-between"><p className="text-sm font-extrabold text-[#10213e]">Published and draft content</p>{canEdit && <button onClick={() => onEdit(null)} className="tap-button inline-flex items-center gap-1.5 rounded-full bg-[#0b4ab8] px-3.5 py-2 text-xs font-extrabold text-white"><Plus className="h-3.5 w-3.5" />New {title}</button>}</div><div className="mt-4 space-y-3">{loading ? <div className="h-32 animate-pulse rounded-2xl bg-slate-200" /> : rows.length ? rows.map(row => <ContentRow key={row.id} row={row} onEdit={() => onEdit(row.id)} canEdit={canEdit} tab={tab} />) : <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6"><p className="font-extrabold text-[#10213e]">No {tab} created yet.</p><p className="mt-2 text-sm leading-6 text-slate-500">Use the editor to create the first {title} for the public site.</p></div>}</div></div><div className="xl:sticky xl:top-24 xl:self-start">{canEdit ? <Editor tab={tab} selected={selected} onDone={onCancel} /> : <div className="rounded-[1.4rem] border border-slate-200 bg-white p-7"><p className="font-extrabold text-[#10213e]">View-only access</p><p className="mt-3 text-sm leading-7 text-slate-600">Administrator access can review, publish, and change public content.</p></div>}</div></div>;
 }
 
@@ -93,7 +94,7 @@ function ContentRow({ row, onEdit, canEdit, tab }: { row: Row; onEdit: () => voi
 function DeleteContent({ id, tab }: { id: string; tab: Tab }) {
   const utils = trpc.useUtils();
   const [failure, setFailure] = useState<string | null>(null);
-  const mutation = tab === "events" ? trpc.content.events.delete.useMutation() : tab === "sermons" ? trpc.content.sermons.delete.useMutation() : tab === "announcements" ? trpc.content.announcements.delete.useMutation() : trpc.content.media.delete.useMutation();
+  const mutation = tab === "events" ? trpc.content.events.delete.useMutation() : tab === "sermons" ? trpc.content.sermons.delete.useMutation() : tab === "announcements" ? trpc.content.announcements.delete.useMutation() : tab === "ministries" ? trpc.content.ministries.delete.useMutation() : trpc.content.media.delete.useMutation();
   const remove = () => mutation.mutate({ id }, { onSuccess: () => { setFailure(null); void utils.content.admin.all.invalidate(); void utils.content.admin.summary.invalidate(); toast.success("Content removed."); }, onError: error => { setFailure(error.message); toast.error(error.message); } });
   return <div className="space-y-2"><button onClick={remove} disabled={mutation.isPending} className="tap-button inline-flex items-center gap-1.5 rounded-lg border border-rose-100 px-3 py-2 text-xs font-extrabold text-rose-600 hover:bg-rose-50 disabled:opacity-50"><Trash2 className="h-3.5 w-3.5" />Delete</button>{failure && <p role="alert" className="max-w-xs text-xs leading-5 text-rose-700">Delete failed. {failure} <button onClick={remove} className="font-extrabold underline">Retry</button></p>}</div>;
 }
@@ -102,6 +103,7 @@ function Editor({ tab, selected, onDone }: { tab: Exclude<Tab, "overview">; sele
   if (tab === "events") return <EventEditor key={selected?.id ?? "new"} selected={selected} onDone={onDone} />;
   if (tab === "sermons") return <SermonEditor key={selected?.id ?? "new"} selected={selected} onDone={onDone} />;
   if (tab === "announcements") return <AnnouncementEditor key={selected?.id ?? "new"} selected={selected} onDone={onDone} />;
+  if (tab === "ministries") return <MinistryEditor key={selected?.id ?? "new"} selected={selected} onDone={onDone} />;
   return <MediaEditor selected={selected} onDone={onDone} />;
 }
 

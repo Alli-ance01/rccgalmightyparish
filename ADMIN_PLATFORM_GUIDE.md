@@ -1,8 +1,8 @@
 # RCCG TAP Admin Platform Guide and Feature Audit
 
-**Prepared by Manus AI**  
-**Repository:** [Alli-ance01/rccgalmightyparish](https://github.com/Alli-ance01/rccgalmightyparish)  
-**Audit date:** 12 September 2026
+**Prepared by Manus AI**
+
+**Repository:** [Alli-ance01/rccgalmightyparish](https://github.com/Alli-ance01/rccgalmightyparish)**Audit date:** 12 September 2026
 
 ## Executive summary
 
@@ -15,7 +15,7 @@ One important limitation was found. The backend contains a ministry-page procedu
 ## 1. How to access the platform
 
 | Purpose | URL | Visibility | Function |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Administrator sign-in | `/sign-in` | Direct URL only | Signs an administrator into the private workspace. It is not linked in the public header or footer. |
 | Initial setup or recovery | `/master-setup` | Direct URL only | Creates the first administrator or repairs the configured master administrator using the private Render setup token. |
 | Main admin workspace | `/admin` | Direct URL only | Opens the administrator dashboard. Unauthenticated visitors are directed to sign in. |
@@ -37,7 +37,7 @@ There are no member accounts, worker accounts, editor accounts, leader accounts,
 An authenticated administrator opens the **Administrators** section from the admin sidebar or the workspace tab row. The panel contains two areas.
 
 | Area | Purpose |
-|---|---|
+| --- | --- |
 | Administrator list | Shows the name, email address, and active status of existing administrators. |
 | Add an administrator | Creates another administrator with a name, email address, and password. |
 
@@ -58,19 +58,27 @@ The recovery page should not be used as the normal method for adding administrat
 The admin workspace has two navigation layers.
 
 | Navigation | Behavior |
-|---|---|
+| --- | --- |
 | Sidebar | Switches the active admin section in place using a browser `CustomEvent`. It does not change the route or reload the page. |
 | Workspace tab row | Switches the active admin section through React state. It also does not change the route. |
 
 The available sections are:
 
 1. Overview
-2. Events
-3. Sermons
-4. Announcements
-5. Media
-6. Administrators
-7. Prayer requests
+
+1. Events
+
+1. Sermons
+
+1. Announcements
+
+1. Media
+
+1. Administrators
+
+1. Ministries
+
+1. Prayer requests
 
 Prayer requests are now part of the same local tab state as the other sections. This means an administrator can open Prayer requests and immediately return to Overview or any other section without navigating away.
 
@@ -79,7 +87,7 @@ Prayer requests are now part of the same local tab state as the other sections. 
 The Overview panel is a summary screen. It displays counts for:
 
 | Card | Count source | What it represents |
-|---|---|---|
+| --- | --- | --- |
 | Sermons | `sermons` collection | All sermon records currently stored, including drafts. |
 | Events | `events` collection | All event records currently stored, including drafts. |
 | Announcements | `announcements` collection | All announcement records currently stored, including inactive and scheduled records. |
@@ -96,7 +104,7 @@ Events are scheduled gatherings, special services, community activities, and oth
 ### 5.2 Event fields
 
 | Field | Required | Purpose and destination |
-|---|---:|---|
+| --- | --- | --- |
 | Title | Yes | The event name shown on cards, the event detail page, and homepage event cards. |
 | URL slug | Yes | The stable URL identifier. For `worship-night`, the public detail URL is `/events/worship-night`. |
 | Excerpt | Yes | Short summary shown on event cards and the homepage. |
@@ -123,7 +131,7 @@ Sermons are the parish message archive. They support video playback links, speak
 ### 6.2 Sermon fields
 
 | Field | Required | Purpose and destination |
-|---|---:|---|
+| --- | --- | --- |
 | Title | Yes | Message title shown throughout the sermon archive and detail page. |
 | URL slug | Yes | Stable public identifier. For `faith-over-fear`, the detail URL is `/sermons/faith-over-fear`. |
 | Speaker | Yes | Displayed on sermon cards and detail pages and available as a public filter. |
@@ -152,7 +160,7 @@ Announcements are the single replacement for the former news area. They are inte
 ### 7.2 Announcement fields
 
 | Field | Required | Purpose and destination |
-|---|---:|---|
+| --- | --- | --- |
 | Title | Yes | Headline shown on homepage announcement cards, the archive, and the detail page. |
 | Message | Yes | Main announcement body. Line breaks are preserved in the public presentation. |
 | Button label | No | Optional call-to-action text. |
@@ -174,9 +182,13 @@ The public archive is `/announcements`. Each announcement detail page is `/annou
 Active announcements can appear in these locations:
 
 - The homepage announcement section.
+
 - The homepage latest-announcement card.
+
 - The public `/announcements` archive.
+
 - The individual announcement detail page.
+
 - Any site-wide announcement strip or notice component that reads the active announcement feed.
 
 The admin editor includes a visitor preview so the administrator can review the title, message, and action label before saving.
@@ -190,7 +202,7 @@ Media stores images, videos, and documents in Cloudinary while keeping searchabl
 ### 8.2 Upload fields
 
 | Field | Required | Purpose |
-|---|---:|---|
+| --- | --- | --- |
 | Title | Yes | Internal and public asset label. |
 | Alt text | No but recommended for images | Accessibility description for images. |
 | Asset type | Yes | Image, video, or document. |
@@ -204,7 +216,9 @@ The upload flow accepts files under 18 MB. The file selector narrows accepted fi
 The Media editor first checks whether the three Render variables are configured:
 
 - `CLOUDINARY_CLOUD_NAME`
+
 - `CLOUDINARY_API_KEY`
+
 - `CLOUDINARY_API_SECRET`
 
 The **Verify connection** button performs a server-side configuration check without revealing the secret. Uploads are converted into data URLs in the browser and sent to the server, which uploads them to Cloudinary and stores the secure URL, public ID, MIME type, publication flag, and creator ID in the `mediaAssets` collection.
@@ -222,7 +236,7 @@ The public media archive is `/media`. Individual media records are available at 
 The public homepage contains the prayer request form. Visitors can submit:
 
 | Field | Rule |
-|---|---|
+| --- | --- |
 | Name | Optional, maximum 120 characters. |
 | Email | Optional, but must be a valid email when provided. |
 | Prayer request | Required, 10–4000 characters. |
@@ -237,17 +251,19 @@ The **Prayer requests** admin tab lists requests newest first. The administrator
 The status selector supports:
 
 - `new`: not yet processed.
+
 - `prayed`: the prayer team has responded appropriately.
+
 - `closed`: the request no longer requires active handling.
 
 Updating a status records the reviewing administrator and review timestamp. Prayer requests are protected by an administrator-only procedure. Non-administrator sessions cannot list or update them.
 
-## 10. Ministries: current limitation
+## 10. Ministries
 
 The backend supports ministry records with the following fields:
 
 | Field | Purpose |
-|---|---|
+| --- | --- |
 | Ministry name | Public ministry title. |
 | URL slug | Public detail identifier, such as `/ministries/youth`. |
 | Audience | `main` or `junior`. |
@@ -261,7 +277,9 @@ The backend supports ministry records with the following fields:
 
 The public `/ministries` page merges static ministry identity data with any matching published managed database record. The public detail page can read a managed record by slug.
 
-However, the current admin tab list does not include Ministries. The source contains a `MinistryEditor`, but it is not currently reachable from the visible admin workspace. Therefore, ministry content should not be described to administrators as an available editing feature until a Ministries tab is added and tested.
+The **Ministries** section is available from both the admin sidebar and the workspace tab row. It uses the existing administrator-only ministry procedures to create, edit, publish, and delete ministry records. The list includes published and draft records, and the editor supports the fields shown above. The **Audience** field determines whether the record is associated with the main parish or Junior Church. The **Publish on the public website** checkbox controls whether public ministry queries can read the record.
+
+After publishing, a ministry record is available at `/ministries/:slug`. The main `/ministries` page merges a published managed record with the static ministry identity entries, while the ministry detail page displays the managed title, summary, full description, leadership, meeting information, and hero image. A managed record whose slug does not correspond to one of the static ministry identity entries can still be read directly by its detail URL, but it will not automatically appear in the main static ministry grid.
 
 ## 11. URL slug explanation
 
@@ -270,15 +288,20 @@ A **URL slug** is the readable, stable part of a public detail-page address. It 
 The server requires slugs to:
 
 - Use lowercase letters.
+
 - Use numbers where needed.
+
 - Separate words with hyphens.
+
 - Contain no spaces.
+
 - Contain no underscores.
+
 - Contain no punctuation other than hyphens.
 
 Valid examples include:
 
-```text
+```
 worship-night
 christmas-service-2026
 faith-over-fear
@@ -287,7 +310,7 @@ junior-church
 
 Invalid examples include:
 
-```text
+```
 Worship Night
 worship_night
 worship/night
@@ -305,13 +328,20 @@ The current server validates slug format but does not create a unique database i
 The recommended workflow is:
 
 1. Open the appropriate admin section.
-2. Select **New** for a new item or **Edit** for an existing item.
-3. Complete required fields.
-4. Check the slug, links, dates, spelling, and public-facing copy.
-5. Leave the publication checkbox off while the content is still a draft.
-6. Save the record.
-7. Review the public listing or detail page.
-8. Publish only after the public presentation is correct.
+
+1. Select **New** for a new item or **Edit** for an existing item.
+
+1. Complete required fields.
+
+1. Check the slug, links, dates, spelling, and public-facing copy.
+
+1. Leave the publication checkbox off while the content is still a draft.
+
+1. Save the record.
+
+1. Review the public listing or detail page.
+
+1. Publish only after the public presentation is correct.
 
 After successful save, the admin queries are invalidated so the list and summary update without a manual refresh. Delete operations remove the database record and update the admin list and counts.
 
@@ -326,18 +356,25 @@ Public procedures are limited to public reading and prayer-request submission. P
 The platform does not currently include:
 
 - Member accounts.
+
 - Worker accounts.
+
 - Editor, leader, or master-admin role distinctions.
+
 - Administrator removal or suspension.
+
 - Self-service password reset.
+
 - Administrator audit history for content changes.
+
 - Slug uniqueness enforcement.
+
 - Automatic old-slug redirects.
 
 ## 14. Test and verification status
 
 | Area | Automated status | What was verified | Live dependency |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | TypeScript | Passed | Client and server type checking. | None. |
 | Production build | Passed | Vite frontend build and bundled server output. | None. |
 | Automated tests | Passed: 19 files, 30 tests | Routes, authentication helpers, prayer authorization, announcements, Cloudinary helpers, content-cover logic, public content behavior, and utility logic. | None. |
@@ -353,7 +390,7 @@ The platform does not currently include:
 
 The latest local validation command was:
 
-```text
+```
 pnpm check
 pnpm build
 pnpm test -- --run
@@ -366,7 +403,7 @@ The build emits non-blocking warnings about missing analytics placeholders and a
 After the latest deployment is available, an administrator should perform the following sequence in the production browser:
 
 | Step | Expected result |
-|---:|---|
+| --- | --- |
 | 1 | Open `/sign-in`; no setup link or public registration link is visible. |
 | 2 | Sign in with an active administrator; `/admin` opens. |
 | 3 | Click every sidebar item; each section changes in place without a route change or page reload. |
