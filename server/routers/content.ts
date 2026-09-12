@@ -4,19 +4,8 @@ import * as db from "../db";
 import { cloudinaryConfigurationStatus, uploadToCloudinary, verifyCloudinaryConfiguration } from "../cloudinary";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 
-const staffProcedure = protectedProcedure.use(({ ctx, next }) => {
-  const role = ctx.user.role;
-  if (!["worker", "ministry_leader", "editor", "admin", "master_admin"].includes(role)) {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Staff access is required." });
-  }
-  return next({ ctx });
-});
-
-const editorProcedure = protectedProcedure.use(({ ctx, next }) => {
-  const role = ctx.user.role;
-  if (!["editor", "admin", "master_admin"].includes(role)) {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Editor or administrator access is required." });
-  }
+const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Administrator access is required." });
   return next({ ctx });
 });
 
@@ -101,7 +90,7 @@ export const contentRouter = router({
       .input(z.object({ search: z.string().optional(), series: z.string().optional(), speaker: z.string().optional(), from: z.date().optional(), to: z.date().optional() }).optional())
       .query(({ input }) => db.listSermons(input)),
     bySlug: publicProcedure.input(z.object({ slug })).query(({ input }) => db.getSermonBySlug(input.slug)),
-    save: editorProcedure.input(z.object({ id: mongoId.optional(), values: sermonInput })).mutation(({ input }) =>
+    save: adminProcedure.input(z.object({ id: mongoId.optional(), values: sermonInput })).mutation(({ input }) =>
       db.saveSermon({
         ...input.values,
         videoId: blankToNull(input.values.videoId),
@@ -111,12 +100,12 @@ export const contentRouter = router({
         publishedAt: input.values.publishedAt ?? null,
       }, input.id),
     ),
-    delete: editorProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteSermon(input.id)),
+    delete: adminProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteSermon(input.id)),
   }),
   events: router({
     list: publicProcedure.query(() => db.listEvents()),
     bySlug: publicProcedure.input(z.object({ slug })).query(({ input }) => db.getEventBySlug(input.slug)),
-    save: editorProcedure.input(z.object({ id: mongoId.optional(), values: eventInput })).mutation(({ input }) =>
+    save: adminProcedure.input(z.object({ id: mongoId.optional(), values: eventInput })).mutation(({ input }) =>
       db.saveEvent({
         ...input.values,
         registrationUrl: blankToNull(input.values.registrationUrl),
@@ -124,8 +113,8 @@ export const contentRouter = router({
         endsAt: input.values.endsAt ?? null,
       }, input.id),
     ),
-    delete: editorProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteEvent(input.id)),
-    uploadCover: editorProcedure.input(z.object({ filename: z.string().trim().min(1).max(255), mimeType: z.string().trim().regex(/^image\//, "Choose an image file."), dataUrl: z.string().min(20).max(25 * 1024 * 1024, "Choose an image smaller than 18 MB.") })).mutation(async ({ ctx, input }) => {
+    delete: adminProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteEvent(input.id)),
+    uploadCover: adminProcedure.input(z.object({ filename: z.string().trim().min(1).max(255), mimeType: z.string().trim().regex(/^image\//, "Choose an image file."), dataUrl: z.string().min(20).max(25 * 1024 * 1024, "Choose an image smaller than 18 MB.") })).mutation(async ({ ctx, input }) => {
       if (!input.dataUrl.includes(",")) throw new TRPCError({ code: "BAD_REQUEST", message: "The selected cover could not be read." });
       try {
         const uploaded = await uploadToCloudinary({ dataUrl: input.dataUrl, mediaType: "image", filename: `event-cover-${sanitizeFilename(input.filename)}`, contentType: input.mimeType, uploaderId: ctx.user.id });
@@ -138,15 +127,15 @@ export const contentRouter = router({
   posts: router({
     list: publicProcedure.input(z.object({ category: z.string().optional() }).optional()).query(({ input }) => db.listPosts(input?.category)),
     bySlug: publicProcedure.input(z.object({ slug })).query(({ input }) => db.getPostBySlug(input.slug)),
-    save: editorProcedure.input(z.object({ id: mongoId.optional(), values: postInput })).mutation(({ input }) =>
+    save: adminProcedure.input(z.object({ id: mongoId.optional(), values: postInput })).mutation(({ input }) =>
       db.savePost({ ...input.values, coverImageUrl: blankToNull(input.values.coverImageUrl), publishedAt: input.values.publishedAt ?? null }, input.id),
     ),
-    delete: editorProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deletePost(input.id)),
+    delete: adminProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deletePost(input.id)),
   }),
   announcements: router({
     list: publicProcedure.query(() => db.listAnnouncements()),
     byId: publicProcedure.input(z.object({ id: mongoId })).query(({ input }) => db.getAnnouncementById(input.id)),
-    save: editorProcedure.input(z.object({ id: mongoId.optional(), values: announcementInput })).mutation(({ input }) =>
+    save: adminProcedure.input(z.object({ id: mongoId.optional(), values: announcementInput })).mutation(({ input }) =>
       db.saveAnnouncement({
         ...input.values,
         actionLabel: blankToNull(input.values.actionLabel),
@@ -155,12 +144,12 @@ export const contentRouter = router({
         endsAt: input.values.endsAt ?? null,
       }, input.id),
     ),
-    delete: editorProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteAnnouncement(input.id)),
+    delete: adminProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteAnnouncement(input.id)),
   }),
   ministries: router({
     list: publicProcedure.input(z.object({ audience: z.enum(["main", "junior"]).optional() }).optional()).query(({ input }) => db.listMinistryPages(input?.audience)),
     bySlug: publicProcedure.input(z.object({ slug })).query(({ input }) => db.getMinistryBySlug(input.slug)),
-    save: staffProcedure.input(z.object({ id: mongoId.optional(), values: ministryInput })).mutation(({ input }) =>
+    save: adminProcedure.input(z.object({ id: mongoId.optional(), values: ministryInput })).mutation(({ input }) =>
       db.saveMinistryPage({
         ...input.values,
         leaderName: blankToNull(input.values.leaderName),
@@ -169,18 +158,18 @@ export const contentRouter = router({
         heroImageUrl: blankToNull(input.values.heroImageUrl),
       }, input.id),
     ),
-    delete: staffProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteMinistryPage(input.id)),
+    delete: adminProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteMinistryPage(input.id)),
   }),
   media: router({
     list: publicProcedure.query(() => db.listMedia()),
     byId: publicProcedure.input(z.object({ id: mongoId })).query(({ input }) => db.getMediaById(input.id)),
-    cloudinaryStatus: editorProcedure.query(() => cloudinaryConfigurationStatus()),
-    verifyCloudinary: editorProcedure.mutation(async () => {
+    cloudinaryStatus: adminProcedure.query(() => cloudinaryConfigurationStatus()),
+    verifyCloudinary: adminProcedure.mutation(async () => {
       const result = await verifyCloudinaryConfiguration();
       if (!result.verified) throw new TRPCError({ code: "PRECONDITION_FAILED", message: result.message });
       return result;
     }),
-    upload: editorProcedure.input(z.object({
+    upload: adminProcedure.input(z.object({
       title: z.string().trim().min(3).max(255),
       altText: z.string().trim().max(255).optional().nullable(),
       mediaType: z.enum(["image", "video", "document"]),
@@ -207,21 +196,21 @@ export const contentRouter = router({
         createdBy: ctx.user.id,
       });
     }),
-    setPublished: editorProcedure.input(z.object({ id: mongoId, isPublished: z.boolean() })).mutation(async ({ input }) => {
+    setPublished: adminProcedure.input(z.object({ id: mongoId, isPublished: z.boolean() })).mutation(async ({ input }) => {
       const current = (await db.listMedia(true)).find(media => media.id === input.id);
       if (!current) throw new TRPCError({ code: "NOT_FOUND", message: "Media item not found." });
       return db.saveMedia({ ...current, isPublished: input.isPublished }, input.id);
     }),
-    updateMetadata: editorProcedure.input(z.object({ id: mongoId, title: z.string().trim().min(3).max(255), altText: z.string().trim().max(255).optional().nullable(), isPublished: z.boolean() })).mutation(async ({ input }) => {
+    updateMetadata: adminProcedure.input(z.object({ id: mongoId, title: z.string().trim().min(3).max(255), altText: z.string().trim().max(255).optional().nullable(), isPublished: z.boolean() })).mutation(async ({ input }) => {
       const current = (await db.listMedia(true)).find(media => media.id === input.id);
       if (!current) throw new TRPCError({ code: "NOT_FOUND", message: "Media item not found." });
       return db.saveMedia({ ...current, title: input.title, altText: blankToNull(input.altText), isPublished: input.isPublished }, input.id);
     }),
-    delete: editorProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteMedia(input.id)),
+    delete: adminProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deleteMedia(input.id)),
   }),
   admin: router({
-    summary: staffProcedure.query(() => db.getContentCounts()),
-    all: staffProcedure.query(async () => {
+    summary: adminProcedure.query(() => db.getContentCounts()),
+    all: adminProcedure.query(async () => {
       const [sermonRows, eventRows, postRows, announcementRows, ministryRows, mediaRows] = await Promise.all([
         db.listSermons({ includeUnpublished: true }),
         db.listEvents(true),

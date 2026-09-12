@@ -4,7 +4,7 @@ import * as db from "../db";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 
 const prayerTeamProcedure = protectedProcedure.use(({ ctx, next }) => {
-  if (!["admin", "master_admin"].includes(ctx.user.role)) throw new TRPCError({ code: "FORBIDDEN", message: "Prayer requests are visible to administrators only." });
+  if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Prayer requests are visible to administrators only." });
   return next({ ctx });
 });
 

@@ -12,19 +12,12 @@ import type {
   NewPost,
   NewPrayerRequest,
   NewSermon,
-  MemberUpdate,
-  MemberUpdateAudience,
-  MemberProfile,
-  MinistryInterest,
-  JuniorAgeCategory,
-  ServiceAvailability,
   Post,
   PublicUser,
   Sermon,
   PrayerRequest,
   PrayerRequestStatus,
   User,
-  UserRole,
 } from "./models";
 import { ENV } from "./_core/env";
 
@@ -62,11 +55,6 @@ async function ensureIndexes(db: Db) {
     db.collection("posts").createIndex({ slug: 1 }, { unique: true }),
     db.collection("ministryPages").createIndex({ slug: 1 }, { unique: true }),
     db.collection("prayerRequests").createIndex({ status: 1, createdAt: -1 }),
-    db.collection("memberProfiles").createIndex({ userId: 1 }, { unique: true }),
-    db.collection("memberProfiles").createIndex({ ministryInterests: 1, updatedAt: -1 }),
-    db.collection("eventInterests").createIndex({ userId: 1, eventId: 1 }, { unique: true }),
-    db.collection("eventInterests").createIndex({ eventId: 1, createdAt: -1 }),
-    db.collection("memberUpdates").createIndex({ isPublished: 1, audience: 1, createdAt: -1 }),
   ]);
 }
 
@@ -124,167 +112,24 @@ export async function getUserByEmail(email: string): Promise<User | undefined> {
   const user = await collection("users").findOne({ email: normalizeEmail(email) });
   return user ? serialize<User>(user) : undefined;
 }
-export async function hasMasterAdmin() {
+export async function hasAdmin() {
   const db = await getDb(); if (!db) return false;
-  return Boolean(await collection("users").findOne({ role: "master_admin", accountStatus: "active" }));
+  return Boolean(await collection("users").findOne({ role: "admin", accountStatus: "active" }));
 }
-export async function createAccount(input: { name: string; email: string; passwordHash: string; accountType: "member" | "staff"; requestedRole?: Exclude<UserRole, "master_admin">; requestNote?: string | null }): Promise<PublicUser> {
-  await requireDb();
-  const now = new Date();
-  const email = normalizeEmail(input.email);
-  const isStaff = input.accountType === "staff";
-  const result = await collection("users").insertOne({
-    openId: localOpenId(email), email, name: input.name.trim(), passwordHash: input.passwordHash,
-    accountType: input.accountType, accountStatus: isStaff ? "pending" : "active", role: "member",
-    requestedRole: isStaff ? input.requestedRole ?? "worker" : null, requestNote: isStaff ? input.requestNote?.trim() || null : null,
-    approvalNote: null, approvedBy: null, approvedAt: isStaff ? null : now, suspendedAt: null,
-    createdAt: now, updatedAt: now, lastSignedIn: now,
-  });
+export async function createAdmin(input: { name: string; email: string; passwordHash: string }): Promise<PublicUser> {
+  await requireDb(); const now = new Date(); const email = normalizeEmail(input.email);
+  const result = await collection("users").insertOne({ openId: localOpenId(email), email, name: input.name.trim(), passwordHash: input.passwordHash, accountType: "admin", accountStatus: "active", role: "admin", createdAt: now, updatedAt: now, lastSignedIn: now });
   const created = await collection("users").findOne({ _id: result.insertedId });
-  if (!created) throw new Error("Account creation failed");
-  return toPublicUser(serialize<User>(created));
-}
-export async function createMasterAdmin(input: { name: string; email: string; passwordHash: string }): Promise<PublicUser> {
-  await requireDb();
-  const now = new Date();
-  const email = normalizeEmail(input.email);
-  const result = await collection("users").insertOne({
-    openId: localOpenId(email), email, name: input.name.trim(), passwordHash: input.passwordHash,
-    accountType: "staff", accountStatus: "active", role: "master_admin", requestedRole: null, requestNote: null,
-    approvalNote: "Initial Master Admin account", approvedBy: "system", approvedAt: now, suspendedAt: null,
-    createdAt: now, updatedAt: now, lastSignedIn: now,
-  });
-  const created = await collection("users").findOne({ _id: result.insertedId });
-  if (!created) throw new Error("Master Admin creation failed");
-  return toPublicUser(serialize<User>(created));
+  if (!created) throw new Error("Administrator creation failed"); return toPublicUser(serialize<User>(created));
 }
 export async function touchUser(id: string) { await requireDb(); await collection("users").updateOne({ _id: asId(id) }, { $set: { lastSignedIn: new Date(), updatedAt: new Date() } }); }
 export async function updateAccountName(id: string, name: string) {
-  await requireDb();
-  const result = await collection("users").findOneAndUpdate({ _id: asId(id) }, { $set: { name: name.trim(), updatedAt: new Date() } }, { returnDocument: "after" });
-  if (!result) throw new Error("Account not found");
-  return toPublicUser(serialize<User>(result));
+  await requireDb(); const result = await collection("users").findOneAndUpdate({ _id: asId(id), role: "admin" }, { $set: { name: name.trim(), updatedAt: new Date() } }, { returnDocument: "after" });
+  if (!result) throw new Error("Account not found"); return toPublicUser(serialize<User>(result));
 }
 export async function updateAccountPassword(id: string, passwordHash: string) {
-  await requireDb();
-  const result = await collection("users").findOneAndUpdate({ _id: asId(id) }, { $set: { passwordHash, updatedAt: new Date() } }, { returnDocument: "after" });
-  if (!result) throw new Error("Account not found");
-  return toPublicUser(serialize<User>(result));
-}
-export async function listAccessRequests(status: AccountStatus = "pending"): Promise<PublicUser[]> {
-  const db = await getDb(); if (!db) return [];
-  const records = await collection("users").find({ accountType: "staff", accountStatus: status }).sort({ createdAt: -1 }).toArray();
-  return records.map(record => toPublicUser(serialize<User>(record)));
-}
-export async function decideStaffRequest(input: { id: string; approverId: string; decision: "approve" | "reject"; role?: Exclude<UserRole, "master_admin">; note?: string | null }) {
-  await requireDb();
-  const now = new Date();
-  const update = input.decision === "approve"
-    ? { accountStatus: "active", role: input.role ?? "worker", approvedBy: input.approverId, approvedAt: now, approvalNote: input.note?.trim() || null, updatedAt: now }
-    : { accountStatus: "rejected", approvalNote: input.note?.trim() || "Request not approved", updatedAt: now };
-  const result = await collection("users").findOneAndUpdate({ _id: asId(input.id), accountType: "staff", accountStatus: "pending" }, { $set: update }, { returnDocument: "after" });
-  if (!result) throw new Error("Pending staff request not found");
-  return toPublicUser(serialize<User>(result));
-}
-export async function suspendAccount(id: string, approverId: string) {
-  await requireDb();
-  const result = await collection("users").findOneAndUpdate({ _id: asId(id), role: { $ne: "master_admin" } }, { $set: { accountStatus: "suspended", suspendedAt: new Date(), approvedBy: approverId, updatedAt: new Date() } }, { returnDocument: "after" });
-  if (!result) throw new Error("Account not found or protected");
-  return toPublicUser(serialize<User>(result));
-}
-export function managedStaffFilter(status?: AccountStatus): Filter<Document> {
-  return { accountType: "staff", role: { $ne: "master_admin" }, ...(status ? { accountStatus: status } : { accountStatus: { $in: ["active", "rejected", "suspended"] } }) };
-}
-export async function listManagedStaff(status?: AccountStatus): Promise<PublicUser[]> {
-  const db = await getDb(); if (!db) return [];
-  const query = managedStaffFilter(status);
-  return (await collection("users").find(query).sort({ updatedAt: -1 }).toArray()).map(record => toPublicUser(serialize<User>(record)));
-}
-export async function changeStaffRole(id: string, role: Exclude<UserRole, "master_admin">, approverId: string) {
-  await requireDb();
-  const result = await collection("users").findOneAndUpdate({ _id: asId(id), accountType: "staff", role: { $ne: "master_admin" }, accountStatus: "active" }, { $set: { role, approvedBy: approverId, updatedAt: new Date() } }, { returnDocument: "after" });
-  if (!result) throw new Error("Active staff account not found or protected");
-  return toPublicUser(serialize<User>(result));
-}
-export async function reactivateStaff(id: string, approverId: string) {
-  await requireDb();
-  const result = await collection("users").findOneAndUpdate({ _id: asId(id), accountType: "staff", role: { $ne: "master_admin" }, accountStatus: "suspended" }, { $set: { accountStatus: "active", suspendedAt: null, approvedBy: approverId, updatedAt: new Date() } }, { returnDocument: "after" });
-  if (!result) throw new Error("Suspended staff account not found or protected");
-  return toPublicUser(serialize<User>(result));
-}
-
-export async function getMemberProfile(userId: string): Promise<MemberProfile | undefined> {
-  const db = await getDb(); if (!db) return undefined;
-  const record = await collection("memberProfiles").findOne({ userId });
-  return record ? serialize<MemberProfile>(record) : undefined;
-}
-
-export async function saveMemberProfile(input: { userId: string; ministryInterests: MinistryInterest[]; serviceAvailability: ServiceAvailability | null; wantsParishUpdates: boolean; isGuardian: boolean; juniorAgeCategories: JuniorAgeCategory[]; onboardingCompleted?: boolean }): Promise<MemberProfile> {
-  await requireDb();
-  const now = new Date();
-  const result = await collection("memberProfiles").findOneAndUpdate(
-    { userId: input.userId },
-    {
-      $set: {
-        ministryInterests: Array.from(new Set(input.ministryInterests)),
-        serviceAvailability: input.serviceAvailability,
-        wantsParishUpdates: input.wantsParishUpdates,
-        isGuardian: input.isGuardian,
-        juniorAgeCategories: input.isGuardian ? Array.from(new Set(input.juniorAgeCategories)) : [],
-        onboardingCompletedAt: input.onboardingCompleted ? now : null,
-        updatedAt: now,
-      },
-      $setOnInsert: { createdAt: now },
-    },
-    { upsert: true, returnDocument: "after" },
-  );
-  if (!result) throw new Error("Member profile could not be saved");
-  return serialize<MemberProfile>(result);
-}
-
-export async function setEventInterest(input: { userId: string; eventId: string; interested: boolean }) {
-  await requireDb();
-  if (input.interested) {
-    await collection("eventInterests").updateOne({ userId: input.userId, eventId: input.eventId }, { $setOnInsert: { userId: input.userId, eventId: input.eventId, createdAt: new Date(), updatedAt: new Date() } }, { upsert: true });
-  } else {
-    await collection("eventInterests").deleteOne({ userId: input.userId, eventId: input.eventId });
-  }
-  return { eventId: input.eventId, interested: input.interested };
-}
-
-export async function listEventInterestIds(userId: string): Promise<string[]> {
-  const db = await getDb(); if (!db) return [];
-  return (await collection("eventInterests").find({ userId }).toArray()).map(record => String(record.eventId));
-}
-
-export async function listMemberProfilesForStaff() {
-  const db = await getDb(); if (!db) return [];
-  const profiles = (await collection("memberProfiles").find({}).sort({ updatedAt: -1 }).toArray()).map(serialize<MemberProfile>);
-  const users = await collection("users").find({ _id: { $in: profiles.map(profile => asId(profile.userId)) }, accountType: "member", accountStatus: "active" }).toArray();
-  const members = new Map(users.map(user => { const member = toPublicUser(serialize<User>(user)); return [member.id, member] as const; }));
-  return profiles.flatMap(profile => { const member = members.get(profile.userId); return member ? [{ profile, member }] : []; });
-}
-
-export async function createMemberUpdate(input: { title: string; body: string; audience: MemberUpdateAudience; audienceValues: string[]; createdBy: string; isPublished: boolean }) {
-  const id = await saveRecord("memberUpdates", { ...input, audienceValues: Array.from(new Set(input.audienceValues)) });
-  const record = await collection("memberUpdates").findOne({ _id: asId(id) });
-  if (!record) throw new Error("Member update could not be created");
-  return serialize<MemberUpdate>(record);
-}
-
-export async function listMemberUpdatesForStaff(): Promise<MemberUpdate[]> {
-  const db = await getDb(); if (!db) return [];
-  return (await collection("memberUpdates").find({}).sort({ createdAt: -1 }).toArray()).map(serialize<MemberUpdate>);
-}
-
-export async function listMemberUpdatesForUser(userId: string): Promise<MemberUpdate[]> {
-  const db = await getDb(); if (!db) return [];
-  const profile = await getMemberProfile(userId);
-  if (profile && !profile.wantsParishUpdates) return [];
-  const ministryInterests = profile?.ministryInterests ?? [];
-  const juniorAgeCategories = profile?.isGuardian ? profile.juniorAgeCategories : [];
-  const query: Filter<Document> = { isPublished: true, $or: [{ audience: "all" }, { audience: "ministry", audienceValues: { $in: ministryInterests } }, { audience: "junior-category", audienceValues: { $in: juniorAgeCategories } }] };
-  return (await collection("memberUpdates").find(query).sort({ createdAt: -1 }).toArray()).map(serialize<MemberUpdate>);
+  await requireDb(); const result = await collection("users").findOneAndUpdate({ _id: asId(id), role: "admin" }, { $set: { passwordHash, updatedAt: new Date() } }, { returnDocument: "after" });
+  if (!result) throw new Error("Account not found"); return toPublicUser(serialize<User>(result));
 }
 
 export async function listSermons(filters?: { search?: string; series?: string; speaker?: string; from?: Date; to?: Date; includeUnpublished?: boolean }): Promise<Sermon[]> {
@@ -353,4 +198,4 @@ export async function updatePrayerRequestStatus(id: string, status: PrayerReques
   return serialize<PrayerRequest>(result);
 }
 
-export async function getContentCounts() { const db = await getDb(); if (!db) return { sermons: 0, events: 0, posts: 0, media: 0, ministries: 0 }; const [sermons, events, posts, media, ministries] = await Promise.all(["sermons", "events", "posts", "mediaAssets", "ministryPages"].map(name => collection(name).countDocuments())); return { sermons, events, posts, media, ministries }; }
+export async function getContentCounts() { const db = await getDb(); if (!db) return { sermons: 0, events: 0, announcements: 0, media: 0 }; const [sermons, events, announcements, media] = await Promise.all(["sermons", "events", "announcements", "mediaAssets"].map(name => collection(name).countDocuments())); return { sermons, events, announcements, media }; }

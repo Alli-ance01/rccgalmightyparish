@@ -6,20 +6,15 @@ import About from "./pages/About";
 import AnnouncementDetail from "./pages/AnnouncementDetail";
 import Announcements from "./pages/Announcements";
 import Admin from "./pages/Admin";
-import Approvals from "./pages/Approvals";
 import Contact from "./pages/Contact";
 import EventDetail from "./pages/EventDetail";
 import Events from "./pages/Events";
-import FamilyHub from "./pages/FamilyHub";
 import Give from "./pages/Give";
 import Home from "./pages/Home";
 import JuniorChurch from "./pages/JuniorChurch";
 import Leadership from "./pages/Leadership";
 import Media from "./pages/Media";
 import MediaDetail from "./pages/MediaDetail";
-import MemberDashboard from "./pages/MemberDashboard";
-import MemberInsights from "./pages/MemberInsights";
-import MinistryHub from "./pages/MinistryHub";
 import MasterSetup from "./pages/MasterSetup";
 import Ministries from "./pages/Ministries";
 import MinistryDetail from "./pages/MinistryDetail";
@@ -74,14 +69,9 @@ function Router() {
     <Route path="/announcements/:id" component={AnnouncementDetail} />
     <Route path="/sign-in" component={SignIn} />
     <Route path="/account" component={LegacyAccountRedirect} />
-    <Route path="/member" component={MemberDashboard} />
-    <Route path="/member/ministry" component={MinistryHub} />
-    <Route path="/family-hub" component={FamilyHub} />
     <Route path="/master-setup" component={MasterSetup} />
     <Route path="/admin" component={Admin} />
-    <Route path="/admin/approvals" component={Approvals} />
     <Route path="/admin/prayer-requests" component={PrayerRequests} />
-    <Route path="/admin/member-insights" component={MemberInsights} />
     <Route component={NotFound} />
   </Switch>;
 }

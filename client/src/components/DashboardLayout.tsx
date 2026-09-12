@@ -20,7 +20,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/useMobile";
-import { BarChart3, CalendarDays, HandHeart, Images, LayoutDashboard, LogOut, Megaphone, PanelLeft, ShieldCheck, Users, Video } from "lucide-react";
+import { BarChart3, CalendarDays, HandHeart, Images, LayoutDashboard, LogOut, Megaphone, PanelLeft, Video } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -30,12 +30,9 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/admin" },
   { icon: CalendarDays, label: "Events", path: "/admin?tab=events" },
   { icon: Video, label: "Sermons", path: "/admin?tab=sermons" },
-  { icon: Users, label: "Ministries", path: "/admin?tab=ministries" },
   { icon: Megaphone, label: "Announcements", path: "/admin?tab=announcements" },
   { icon: Images, label: "Media", path: "/admin?tab=media" },
-  { icon: ShieldCheck, label: "Access requests", path: "/admin/approvals" },
   { icon: HandHeart, label: "Prayer requests", path: "/admin/prayer-requests" },
-  { icon: BarChart3, label: "Member insights", path: "/admin/member-insights", adminOnly: true },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -55,9 +52,7 @@ export default function DashboardLayout({
   });
   const { loading, user } = useAuth();
 
-  useEffect(() => { if (user?.role === "member") setLocation("/member"); }, [setLocation, user]);
-
-  useEffect(() => {
+    useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
   }, [sidebarWidth]);
 
@@ -88,8 +83,6 @@ export default function DashboardLayout({
       </div>
     );
   }
-
-  if (user.role === "member") return <DashboardLayoutSkeleton />;
 
   return (
     <SidebarProvider
@@ -190,7 +183,7 @@ function DashboardLayoutContent({
 
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1">
-              {menuItems.filter(item => !item.adminOnly || user?.role === "admin" || user?.role === "master_admin").map(item => {
+              {menuItems.map(item => {
                 const isActive = location === item.path;
                 return (
                   <SidebarMenuItem key={item.path}>

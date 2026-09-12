@@ -4,19 +4,17 @@ import { QueryError } from "@/components/PageBits";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { getAnnouncementStatus, type AnnouncementSchedule } from "@/lib/announcementStatus";
-import { CalendarDays, FilePlus2, Images, Loader2, Megaphone, Newspaper, Pencil, Plus, Trash2, UsersRound, Video } from "lucide-react";
+import { CalendarDays, FilePlus2, Images, Loader2, Megaphone, Pencil, Plus, Trash2, Video } from "lucide-react";
 import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-type Tab = "overview" | "events" | "sermons" | "news" | "ministries" | "announcements" | "media";
+type Tab = "overview" | "events" | "sermons" | "ministries" | "announcements" | "media";
 type Row = Record<string, unknown> & { id: string };
 
 const tabItems: Array<{ id: Tab; label: string; icon: typeof CalendarDays }> = [
   { id: "overview", label: "Overview", icon: FilePlus2 },
   { id: "events", label: "Events", icon: CalendarDays },
   { id: "sermons", label: "Sermons", icon: Video },
-  { id: "news", label: "News", icon: Newspaper },
-  { id: "ministries", label: "Ministries", icon: UsersRound },
   { id: "announcements", label: "Announcements", icon: Megaphone },
   { id: "media", label: "Media", icon: Images },
 ];
@@ -33,35 +31,35 @@ export default function Admin() {
 function AdminWorkspace() {
   const { user, loading } = useAuth();
   const role = user?.role;
-  const isStaff = !!role && ["worker", "ministry_leader", "editor", "admin", "master_admin"].includes(role);
-  const canEdit = !!role && ["editor", "admin", "master_admin"].includes(role);
+  const isAdmin = role === "admin";
+  const canEdit = isAdmin;
   const [tab, setTab] = useState<Tab>("overview");
   const [editing, setEditing] = useState<string | null>(null);
-  const { data: summary, isLoading: summaryLoading, isError: summaryError, refetch: refetchSummary } = trpc.content.admin.summary.useQuery(undefined, { enabled: isStaff });
-  const { data: all, isLoading: contentLoading, isError: contentError, refetch: refetchContent } = trpc.content.admin.all.useQuery(undefined, { enabled: isStaff });
+  const { data: summary, isLoading: summaryLoading, isError: summaryError, refetch: refetchSummary } = trpc.content.admin.summary.useQuery(undefined, { enabled: isAdmin });
+  const { data: all, isLoading: contentLoading, isError: contentError, refetch: refetchContent } = trpc.content.admin.all.useQuery(undefined, { enabled: isAdmin });
 
   if (loading) return <div className="grid min-h-[50vh] place-items-center"><Loader2 className="h-6 w-6 animate-spin text-[#0b4ab8]" /></div>;
-  if (!isStaff) return <section className="mx-auto max-w-2xl py-16"><p className="eyebrow text-[#0b4ab8]">TAP staff workspace</p><h1 className="display mt-4 text-5xl leading-[0.95] text-[#10213e]">This area is for approved staff.</h1><p className="mt-5 text-sm leading-7 text-slate-600">Your account is signed in, but it has not yet been assigned a staff role. An administrator can promote accounts to worker, ministry leader, editor, or administrator access from the database management panel.</p></section>;
-  if (summaryError || contentError) return <section className="mx-auto max-w-2xl py-16"><QueryError label="The staff workspace could not load its latest content." retry={() => { void refetchSummary(); void refetchContent(); }} /></section>;
+  if (!isAdmin) return <section className="mx-auto max-w-2xl py-16"><p className="eyebrow text-[#0b4ab8]">TAP admin workspace</p><h1 className="display mt-4 text-5xl leading-[0.95] text-[#10213e]">This area is for administrators only.</h1><p className="mt-5 text-sm leading-7 text-slate-600">Only approved administrators can access this workspace.</p></section>;
+  if (summaryError || contentError) return <section className="mx-auto max-w-2xl py-16"><QueryError label="The admin workspace could not load its latest content." retry={() => { void refetchSummary(); void refetchContent(); }} /></section>;
 
   const title = tabItems.find(item => item.id === tab)?.label ?? "Overview";
-  const rows = tab === "events" ? all?.events : tab === "sermons" ? all?.sermons : tab === "news" ? all?.posts : tab === "ministries" ? all?.ministries : tab === "announcements" ? all?.announcements : tab === "media" ? all?.media : [];
+  const rows = tab === "events" ? all?.events : tab === "sermons" ? all?.sermons : tab === "announcements" ? all?.announcements : tab === "media" ? all?.media : [];
   const selected = editing ? (rows as Row[] | undefined)?.find(row => row.id === editing) : undefined;
 
-  return <section className="mx-auto max-w-6xl py-5 sm:py-8"><div className="flex flex-col justify-between gap-5 border-b border-slate-200 pb-7 sm:flex-row sm:items-end"><div><p className="eyebrow text-[#0b4ab8]">TAP staff workspace</p><h1 className="display mt-3 text-4xl leading-none text-[#10213e]">{title}</h1><p className="mt-3 text-sm text-slate-500">Signed in as {user?.name ?? "Staff member"} · {role?.replace("_", " ")}</p></div><a href="/" className="text-xs font-extrabold text-[#0b4ab8]">View public site ↗</a></div>
+  return <section className="mx-auto max-w-6xl py-5 sm:py-8"><div className="flex flex-col justify-between gap-5 border-b border-slate-200 pb-7 sm:flex-row sm:items-end"><div><p className="eyebrow text-[#0b4ab8]">TAP admin workspace</p><h1 className="display mt-3 text-4xl leading-none text-[#10213e]">{title}</h1><p className="mt-3 text-sm text-slate-500">Signed in as {user?.name ?? "Administrator"} · {role?.replace("_", " ")}</p></div><a href="/" className="text-xs font-extrabold text-[#0b4ab8]">View public site ↗</a></div>
     <div className="mt-6 flex gap-2 overflow-x-auto pb-1">{tabItems.map(item => <button key={item.id} onClick={() => { setTab(item.id); setEditing(null); }} className={`tap-button inline-flex shrink-0 items-center gap-2 rounded-full px-3.5 py-2 text-xs font-extrabold ${tab === item.id ? "bg-[#0b4ab8] text-white" : "border border-slate-200 bg-white text-slate-600 hover:border-[#0b4ab8] hover:text-[#0b4ab8]"}`}><item.icon className="h-3.5 w-3.5" />{item.label}</button>)}</div>
     {tab === "overview" ? <Overview summary={summary} loading={summaryLoading} setTab={setTab} /> : <ContentWorkspace tab={tab} canEdit={canEdit} loading={contentLoading} rows={(rows ?? []) as Row[]} selected={selected} onEdit={setEditing} onCancel={() => setEditing(null)} />}
   </section>;
 }
 
-function Overview({ summary, loading, setTab }: { summary?: { sermons: number; events: number; posts: number; media: number; ministries: number }; loading: boolean; setTab: (tab: Tab) => void }) {
-  const cards = [{ label: "Sermons", count: summary?.sermons ?? 0, tab: "sermons" as Tab, icon: Video }, { label: "Events", count: summary?.events ?? 0, tab: "events" as Tab, icon: CalendarDays }, { label: "News posts", count: summary?.posts ?? 0, tab: "news" as Tab, icon: Newspaper }, { label: "Media assets", count: summary?.media ?? 0, tab: "media" as Tab, icon: Images }, { label: "Ministry pages", count: summary?.ministries ?? 0, tab: "ministries" as Tab, icon: UsersRound }];
-  return <div className="mt-8"><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">{cards.map(card => <button key={card.label} onClick={() => setTab(card.tab)} className="tap-button rounded-2xl border border-slate-200 bg-white p-5 text-left hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-900/5"><card.icon className="h-5 w-5 text-[#0b4ab8]" /><p className="mt-7 text-3xl font-extrabold text-[#10213e]">{loading ? "—" : card.count}</p><p className="mt-1 text-xs font-bold text-slate-500">{card.label}</p></button>)}</div><div className="mt-8 rounded-[1.4rem] bg-[#eaf2ff] p-7"><p className="eyebrow text-[#0b4ab8]">Editorial workflow</p><h2 className="display mt-4 text-4xl leading-[0.95] text-[#10213e]">Publish with accuracy.</h2><p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600">Every public page reads from this content workspace. Draft an item, check its details, then mark it published only when it is ready for the parish website.</p></div></div>;
+function Overview({ summary, loading, setTab }: { summary?: { sermons: number; events: number; announcements: number; media: number }; loading: boolean; setTab: (tab: Tab) => void }) {
+  const cards = [{ label: "Sermons", count: summary?.sermons ?? 0, tab: "sermons" as Tab, icon: Video }, { label: "Events", count: summary?.events ?? 0, tab: "events" as Tab, icon: CalendarDays }, { label: "Announcements", count: summary?.announcements ?? 0, tab: "announcements" as Tab, icon: Megaphone }, { label: "Media assets", count: summary?.media ?? 0, tab: "media" as Tab, icon: Images }];
+  return <div className="mt-8"><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{cards.map(card => <button key={card.label} onClick={() => setTab(card.tab)} className="tap-button rounded-2xl border border-slate-200 bg-white p-5 text-left hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-900/5"><card.icon className="h-5 w-5 text-[#0b4ab8]" /><p className="mt-7 text-3xl font-extrabold text-[#10213e]">{loading ? "—" : card.count}</p><p className="mt-1 text-xs font-bold text-slate-500">{card.label}</p></button>)}</div><div className="mt-8 rounded-[1.4rem] bg-[#eaf2ff] p-7"><p className="eyebrow text-[#0b4ab8]">Editorial workflow</p><h2 className="display mt-4 text-4xl leading-[0.95] text-[#10213e]">Publish with accuracy.</h2><p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600">Every public page reads from this content workspace. Draft an item, check its details, then mark it published only when it is ready for the parish website.</p></div></div>;
 }
 
 function ContentWorkspace({ tab, canEdit, loading, rows, selected, onEdit, onCancel }: { tab: Exclude<Tab, "overview">; canEdit: boolean; loading: boolean; rows: Row[]; selected?: Row; onEdit: (id: string | null) => void; onCancel: () => void }) {
-  const title = tab === "news" ? "article" : tab === "media" ? "media asset" : tab.slice(0, -1);
-  return <div className="mt-8 grid gap-7 xl:grid-cols-[1fr_1.08fr]"><div><div className="flex items-center justify-between"><p className="text-sm font-extrabold text-[#10213e]">Published and draft content</p>{canEdit && <button onClick={() => onEdit(null)} className="tap-button inline-flex items-center gap-1.5 rounded-full bg-[#0b4ab8] px-3.5 py-2 text-xs font-extrabold text-white"><Plus className="h-3.5 w-3.5" />New {title}</button>}</div><div className="mt-4 space-y-3">{loading ? <div className="h-32 animate-pulse rounded-2xl bg-slate-200" /> : rows.length ? rows.map(row => <ContentRow key={row.id} row={row} onEdit={() => onEdit(row.id)} canEdit={canEdit} tab={tab} />) : <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6"><p className="font-extrabold text-[#10213e]">No {tab} created yet.</p><p className="mt-2 text-sm leading-6 text-slate-500">Use the editor to create the first {title} for the public site.</p></div>}</div></div><div className="xl:sticky xl:top-24 xl:self-start">{canEdit ? <Editor tab={tab} selected={selected} onDone={onCancel} /> : <div className="rounded-[1.4rem] border border-slate-200 bg-white p-7"><p className="font-extrabold text-[#10213e]">View-only staff access</p><p className="mt-3 text-sm leading-7 text-slate-600">Your role can review content but cannot publish or change it. Ask an editor or administrator for publishing access.</p></div>}</div></div>;
+  const title = tab === "media" ? "media asset" : tab.slice(0, -1);
+  return <div className="mt-8 grid gap-7 xl:grid-cols-[1fr_1.08fr]"><div><div className="flex items-center justify-between"><p className="text-sm font-extrabold text-[#10213e]">Published and draft content</p>{canEdit && <button onClick={() => onEdit(null)} className="tap-button inline-flex items-center gap-1.5 rounded-full bg-[#0b4ab8] px-3.5 py-2 text-xs font-extrabold text-white"><Plus className="h-3.5 w-3.5" />New {title}</button>}</div><div className="mt-4 space-y-3">{loading ? <div className="h-32 animate-pulse rounded-2xl bg-slate-200" /> : rows.length ? rows.map(row => <ContentRow key={row.id} row={row} onEdit={() => onEdit(row.id)} canEdit={canEdit} tab={tab} />) : <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6"><p className="font-extrabold text-[#10213e]">No {tab} created yet.</p><p className="mt-2 text-sm leading-6 text-slate-500">Use the editor to create the first {title} for the public site.</p></div>}</div></div><div className="xl:sticky xl:top-24 xl:self-start">{canEdit ? <Editor tab={tab} selected={selected} onDone={onCancel} /> : <div className="rounded-[1.4rem] border border-slate-200 bg-white p-7"><p className="font-extrabold text-[#10213e]">View-only access</p><p className="mt-3 text-sm leading-7 text-slate-600">Administrator access can review, publish, and change public content.</p></div>}</div></div>;
 }
 
 function ContentRow({ row, onEdit, canEdit, tab }: { row: Row; onEdit: () => void; canEdit: boolean; tab: Tab }) {
@@ -75,7 +73,7 @@ function ContentRow({ row, onEdit, canEdit, tab }: { row: Row; onEdit: () => voi
 function DeleteContent({ id, tab }: { id: string; tab: Tab }) {
   const utils = trpc.useUtils();
   const [failure, setFailure] = useState<string | null>(null);
-  const mutation = tab === "events" ? trpc.content.events.delete.useMutation() : tab === "sermons" ? trpc.content.sermons.delete.useMutation() : tab === "news" ? trpc.content.posts.delete.useMutation() : tab === "ministries" ? trpc.content.ministries.delete.useMutation() : tab === "announcements" ? trpc.content.announcements.delete.useMutation() : trpc.content.media.delete.useMutation();
+  const mutation = tab === "events" ? trpc.content.events.delete.useMutation() : tab === "sermons" ? trpc.content.sermons.delete.useMutation() : tab === "announcements" ? trpc.content.announcements.delete.useMutation() : trpc.content.media.delete.useMutation();
   const remove = () => mutation.mutate({ id }, { onSuccess: () => { setFailure(null); void utils.content.admin.all.invalidate(); void utils.content.admin.summary.invalidate(); toast.success("Content removed."); }, onError: error => { setFailure(error.message); toast.error(error.message); } });
   return <div className="space-y-2"><button onClick={remove} disabled={mutation.isPending} className="tap-button inline-flex items-center gap-1.5 rounded-lg border border-rose-100 px-3 py-2 text-xs font-extrabold text-rose-600 hover:bg-rose-50 disabled:opacity-50"><Trash2 className="h-3.5 w-3.5" />Delete</button>{failure && <p role="alert" className="max-w-xs text-xs leading-5 text-rose-700">Delete failed. {failure} <button onClick={remove} className="font-extrabold underline">Retry</button></p>}</div>;
 }
@@ -83,8 +81,6 @@ function DeleteContent({ id, tab }: { id: string; tab: Tab }) {
 function Editor({ tab, selected, onDone }: { tab: Exclude<Tab, "overview">; selected?: Row; onDone: () => void }) {
   if (tab === "events") return <EventEditor key={selected?.id ?? "new"} selected={selected} onDone={onDone} />;
   if (tab === "sermons") return <SermonEditor key={selected?.id ?? "new"} selected={selected} onDone={onDone} />;
-  if (tab === "news") return <PostEditor key={selected?.id ?? "new"} selected={selected} onDone={onDone} />;
-  if (tab === "ministries") return <MinistryEditor key={selected?.id ?? "new"} selected={selected} onDone={onDone} />;
   if (tab === "announcements") return <AnnouncementEditor key={selected?.id ?? "new"} selected={selected} onDone={onDone} />;
   return <MediaEditor selected={selected} onDone={onDone} />;
 }

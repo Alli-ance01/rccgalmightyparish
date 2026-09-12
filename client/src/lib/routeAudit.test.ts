@@ -1,15 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { legacyRouteRedirects, memberRouteDestinations, privateRouteDestinations, publicRouteDestinations, routesHaveNoDuplicates, staffRouteDestinations } from "./routeAudit";
-
-describe("public route destinations", () => {
-  it("keeps the key visitor journeys direct and non-duplicated", () => {
+import { adminRouteDestinations, legacyRouteRedirects, privateRouteDestinations, publicRouteDestinations, routesHaveNoDuplicates } from "./routeAudit";
+describe("route destinations", () => {
+  it("keeps public and private routes distinct and non-duplicated", () => {
     expect(routesHaveNoDuplicates(publicRouteDestinations)).toBe(true);
     expect(publicRouteDestinations).toEqual(expect.arrayContaining(["/visit", "/sermons", "/announcements"]));
     expect(publicRouteDestinations).not.toContain("/sign-in");
-    expect(privateRouteDestinations).toContain("/sign-in");
-    expect(publicRouteDestinations).not.toContain("/account");
-    expect(routesHaveNoDuplicates(memberRouteDestinations)).toBe(true);
-    expect(routesHaveNoDuplicates(staffRouteDestinations)).toBe(true);
+    expect(privateRouteDestinations).toEqual(expect.arrayContaining(["/sign-in", "/master-setup"]));
+    expect(adminRouteDestinations).toEqual(["/admin"]);
     expect(legacyRouteRedirects).toContainEqual({ from: "/account", to: "/sign-in" });
     expect(legacyRouteRedirects).toContainEqual({ from: "/news", to: "/announcements" });
   });
