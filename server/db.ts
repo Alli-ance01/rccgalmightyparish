@@ -9,10 +9,8 @@ import type {
   NewEvent,
   NewMediaAsset,
   NewMinistryPage,
-  NewPost,
   NewPrayerRequest,
   NewSermon,
-  Post,
   PublicUser,
   Sermon,
   PrayerRequest,
@@ -52,7 +50,6 @@ async function ensureIndexes(db: Db) {
     db.collection("users").createIndex({ accountStatus: 1, accountType: 1 }),
     db.collection("sermons").createIndex({ slug: 1 }, { unique: true }),
     db.collection("events").createIndex({ slug: 1 }, { unique: true }),
-    db.collection("posts").createIndex({ slug: 1 }, { unique: true }),
     db.collection("ministryPages").createIndex({ slug: 1 }, { unique: true }),
     db.collection("prayerRequests").createIndex({ status: 1, createdAt: -1 }),
   ]);
@@ -148,11 +145,6 @@ export async function listEvents(includeUnpublished = false): Promise<Event[]> {
 export async function getEventBySlug(slug: string, includeUnpublished = false): Promise<Event | undefined> { const db = await getDb(); if (!db) return undefined; const record = await collection("events").findOne(includeUnpublished ? { slug } : { slug, isPublished: true }); return record ? serialize<Event>(record) : undefined; }
 export const saveEvent = (values: NewEvent, id?: string) => saveRecord("events", values, id);
 export const deleteEvent = (id: string) => deleteRecord("events", id);
-
-export async function listPosts(category?: string, includeUnpublished = false): Promise<Post[]> { const db = await getDb(); if (!db) return []; const query: Filter<Document> = { ...(includeUnpublished ? {} : { isPublished: true }), ...(category ? { category } : {}) }; return (await collection("posts").find(query).sort({ publishedAt: -1, createdAt: -1 }).toArray()).map(serialize<Post>); }
-export async function getPostBySlug(slug: string, includeUnpublished = false): Promise<Post | undefined> { const db = await getDb(); if (!db) return undefined; const record = await collection("posts").findOne(includeUnpublished ? { slug } : { slug, isPublished: true }); return record ? serialize<Post>(record) : undefined; }
-export const savePost = (values: NewPost, id?: string) => saveRecord("posts", values, id);
-export const deletePost = (id: string) => deleteRecord("posts", id);
 
 export function activeAnnouncementFilter(now = new Date()): Filter<Document> {
   return {

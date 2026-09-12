@@ -41,18 +41,6 @@ const eventInput = z.object({
   isPublished: z.boolean(),
 });
 
-const postInput = z.object({
-  title: z.string().trim().min(3).max(255),
-  slug,
-  excerpt: z.string().trim().min(10),
-  body: z.string().trim().min(20),
-  category: z.string().trim().min(2).max(64),
-  coverImageUrl: optionalString,
-  authorName: z.string().trim().min(2).max(160),
-  publishedAt: z.date().optional().nullable(),
-  isPublished: z.boolean(),
-});
-
 const announcementInput = z.object({
   title: z.string().trim().min(3).max(255),
   body: z.string().trim().min(5),
@@ -123,14 +111,6 @@ export const contentRouter = router({
         throw new TRPCError({ code: "PRECONDITION_FAILED", message: error instanceof Error ? error.message : "Event cover upload failed." });
       }
     }),
-  }),
-  posts: router({
-    list: publicProcedure.input(z.object({ category: z.string().optional() }).optional()).query(({ input }) => db.listPosts(input?.category)),
-    bySlug: publicProcedure.input(z.object({ slug })).query(({ input }) => db.getPostBySlug(input.slug)),
-    save: adminProcedure.input(z.object({ id: mongoId.optional(), values: postInput })).mutation(({ input }) =>
-      db.savePost({ ...input.values, coverImageUrl: blankToNull(input.values.coverImageUrl), publishedAt: input.values.publishedAt ?? null }, input.id),
-    ),
-    delete: adminProcedure.input(z.object({ id: mongoId })).mutation(({ input }) => db.deletePost(input.id)),
   }),
   announcements: router({
     list: publicProcedure.query(() => db.listAnnouncements()),
@@ -211,15 +191,14 @@ export const contentRouter = router({
   admin: router({
     summary: adminProcedure.query(() => db.getContentCounts()),
     all: adminProcedure.query(async () => {
-      const [sermonRows, eventRows, postRows, announcementRows, ministryRows, mediaRows] = await Promise.all([
+      const [sermonRows, eventRows, announcementRows, ministryRows, mediaRows] = await Promise.all([
         db.listSermons({ includeUnpublished: true }),
         db.listEvents(true),
-        db.listPosts(undefined, true),
         db.listAnnouncements(true),
         db.listMinistryPages(undefined, true),
         db.listMedia(true),
       ]);
-      return { sermons: sermonRows, events: eventRows, posts: postRows, announcements: announcementRows, ministries: ministryRows, media: mediaRows };
+      return { sermons: sermonRows, events: eventRows, announcements: announcementRows, ministries: ministryRows, media: mediaRows };
     }),
   }),
 });
