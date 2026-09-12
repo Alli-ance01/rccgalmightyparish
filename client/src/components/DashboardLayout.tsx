@@ -33,7 +33,7 @@ const menuItems = [
   { icon: Megaphone, label: "Announcements", path: "/admin", tab: "announcements" },
   { icon: Images, label: "Media", path: "/admin", tab: "media" },
   { icon: ShieldCheck, label: "Administrators", path: "/admin", tab: "administrators" },
-  { icon: HandHeart, label: "Prayer requests", path: "/admin/prayer-requests" },
+  { icon: HandHeart, label: "Prayer requests", path: "/admin", tab: "prayer-requests" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 export default function PrayerRequests() { return <DashboardLayout><PrayerRequestWorkspace /></DashboardLayout>; }
 
-function PrayerRequestWorkspace() {
+export function PrayerRequestWorkspace() {
   const query = trpc.prayer.list.useQuery(); const utils = trpc.useUtils();
   const update = trpc.prayer.updateStatus.useMutation({ onSuccess: () => { void utils.prayer.list.invalidate(); toast.success("Prayer request status updated."); }, onError: error => toast.error(error.message) });
   if (query.isLoading) return <div className="grid min-h-[50vh] place-items-center"><Loader2 className="h-6 w-6 animate-spin text-[#0b4ab8]" /></div>;
