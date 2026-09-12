@@ -5,7 +5,7 @@ import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { getSessionCookieOptions } from "../_core/cookies";
 import { ENV } from "../_core/env";
 import { sdk } from "../_core/sdk";
-import { publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
 const email = z.string().trim().toLowerCase().email().max(320);
@@ -26,6 +26,14 @@ export const accountRouter = router({
     if (!user || !(await bcrypt.compare(input.password, user.passwordHash))) throw new TRPCError({ code: "UNAUTHORIZED", message: "Email or password is incorrect." });
     if (user.role !== "admin" || user.accountStatus !== "active") throw new TRPCError({ code: "FORBIDDEN", message: "Only active administrators can sign in." });
     await db.touchUser(user.id); const publicUser = db.toPublicUser(user); const sessionToken = await sdk.createLocalSession(publicUser); setLocalSession(ctx, sessionToken); return { user: publicUser, sessionToken };
+  }),
+  admins: router({
+    list: protectedProcedure.query(({ ctx }) => { if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Administrator access is required." }); return db.listAdmins(); }),
+    create: protectedProcedure.input(z.object({ name: z.string().trim().min(2).max(120), email, password })).mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Administrator access is required." });
+      if (await db.getUserByEmail(input.email)) throw new TRPCError({ code: "CONFLICT", message: "An account already exists for this email." });
+      return db.createAdmin({ name: input.name, email: input.email, passwordHash: await bcrypt.hash(input.password, 12) });
+    }),
   }),
   profile: router({
     updateName: publicProcedure.input(z.object({ name: z.string().trim().min(2).max(120) })).mutation(async ({ ctx, input }) => { if (!ctx.user || ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Administrator access is required." }); return db.updateAccountName(ctx.user.id, input.name); }),

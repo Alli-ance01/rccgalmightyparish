@@ -119,6 +119,10 @@ export async function createAdmin(input: { name: string; email: string; password
   const created = await collection("users").findOne({ _id: result.insertedId });
   if (!created) throw new Error("Administrator creation failed"); return toPublicUser(serialize<User>(created));
 }
+export async function listAdmins(): Promise<PublicUser[]> {
+  await requireDb();
+  return (await collection("users").find({ role: "admin" }).sort({ createdAt: 1 }).toArray()).map(record => toPublicUser(serialize<User>(record)));
+}
 export async function prepareAdminAccount(input: { name: string; email: string; passwordHash: string }): Promise<PublicUser> {
   const db = await requireDb(); const now = new Date(); const email = normalizeEmail(input.email);
   const legacyPosts = await db.collection("posts").find({}).toArray();

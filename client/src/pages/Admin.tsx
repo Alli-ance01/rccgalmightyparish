@@ -1,14 +1,15 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout from "@/components/DashboardLayout";
+import AdminManagement from "./AdminManagement";
 import { QueryError } from "@/components/PageBits";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { getAnnouncementStatus, type AnnouncementSchedule } from "@/lib/announcementStatus";
-import { CalendarDays, FilePlus2, Images, Loader2, Megaphone, Pencil, Plus, Trash2, Video } from "lucide-react";
+import { CalendarDays, FilePlus2, Images, Loader2, Megaphone, Pencil, Plus, ShieldCheck, Trash2, Video } from "lucide-react";
 import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-type Tab = "overview" | "events" | "sermons" | "announcements" | "media";
+type Tab = "overview" | "events" | "sermons" | "announcements" | "media" | "administrators";
 type Row = Record<string, unknown> & { id: string };
 
 const tabItems: Array<{ id: Tab; label: string; icon: typeof CalendarDays }> = [
@@ -17,6 +18,7 @@ const tabItems: Array<{ id: Tab; label: string; icon: typeof CalendarDays }> = [
   { id: "sermons", label: "Sermons", icon: Video },
   { id: "announcements", label: "Announcements", icon: Megaphone },
   { id: "media", label: "Media", icon: Images },
+  { id: "administrators", label: "Administrators", icon: ShieldCheck },
 ];
 
 const inputClass = "mt-1.5 h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition-colors focus:border-[#0b4ab8]";
@@ -48,7 +50,7 @@ function AdminWorkspace() {
 
   return <section className="mx-auto max-w-6xl py-5 sm:py-8"><div className="flex flex-col justify-between gap-5 border-b border-slate-200 pb-7 sm:flex-row sm:items-end"><div><p className="eyebrow text-[#0b4ab8]">TAP admin workspace</p><h1 className="display mt-3 text-4xl leading-none text-[#10213e]">{title}</h1><p className="mt-3 text-sm text-slate-500">Signed in as {user?.name ?? "Administrator"} · {role?.replace("_", " ")}</p></div><a href="/" className="text-xs font-extrabold text-[#0b4ab8]">View public site ↗</a></div>
     <div className="mt-6 flex gap-2 overflow-x-auto pb-1">{tabItems.map(item => <button key={item.id} onClick={() => { setTab(item.id); setEditing(null); }} className={`tap-button inline-flex shrink-0 items-center gap-2 rounded-full px-3.5 py-2 text-xs font-extrabold ${tab === item.id ? "bg-[#0b4ab8] text-white" : "border border-slate-200 bg-white text-slate-600 hover:border-[#0b4ab8] hover:text-[#0b4ab8]"}`}><item.icon className="h-3.5 w-3.5" />{item.label}</button>)}</div>
-    {tab === "overview" ? <Overview summary={summary} loading={summaryLoading} setTab={setTab} /> : <ContentWorkspace tab={tab} canEdit={canEdit} loading={contentLoading} rows={(rows ?? []) as Row[]} selected={selected} onEdit={setEditing} onCancel={() => setEditing(null)} />}
+    {tab === "overview" ? <Overview summary={summary} loading={summaryLoading} setTab={setTab} /> : tab === "administrators" ? <AdminManagement /> : <ContentWorkspace tab={tab} canEdit={canEdit} loading={contentLoading} rows={(rows ?? []) as Row[]} selected={selected} onEdit={setEditing} onCancel={() => setEditing(null)} />}
   </section>;
 }
 
